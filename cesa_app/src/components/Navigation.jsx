@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
     <nav className="bg-[#036942] shadow-lg fixed top-0 w-full z-50">
@@ -13,42 +12,44 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
           <div className="flex-shrink-0">
-            <h2 className="text-white text-xl font-semibold">C.E.S.A</h2>
+            <Link to="/">
+              <h2 className="text-white text-xl font-semibold">C.E.S.A</h2>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
-              <a
-                href="#events"
-                className="text-white hover:bg-white hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
+              <Link
+                to="/eventos"
+                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
               >
                 Eventos
-              </a>
-              <a
-                href="#financial"
-                className="text-white hover:bg-white hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
+              </Link>
+              <Link
+                to="/financiero"
+                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
               >
                 Financiero
-              </a>
-              <a
-                href="#members"
-                className="text-white hover:bg-white hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
+              </Link>
+              <Link
+                to="/miembros"
+                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
               >
                 Miembros
-              </a>
-              <a
-                href="#scholarships"
-                className="text-white hover:bg-white hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
+              </Link>
+              <Link
+                to="/becas"
+                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
               >
                 Becas
-              </a>
-              <a
-                href="#students"
-                className="text-white hover:bg-white hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
+              </Link>
+              <Link
+                to="/estudiantes"
+                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
               >
                 Estudiantes
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -77,14 +78,14 @@ const Navigation = () => {
                 viewBox="0 0 24 24"
               >
                 <path
-                  className={!isMenuOpen ? 'block' : 'hidden'}
+                  className={!isMenuOpen ? "block" : "hidden"}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
                   d="M4 6h16M4 12h16M4 18h16"
                 />
                 <path
-                  className={isMenuOpen ? 'block' : 'hidden'}
+                  className={isMenuOpen ? "block" : "hidden"}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
@@ -97,50 +98,48 @@ const Navigation = () => {
       </div>
 
       {/* Mobile Navigation */}
-      <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'}`}>
+      <div className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#036942] border-t border-white border-opacity-10">
-          <a
-            href="#dashboard"
+          
+          <Link
+            to="/eventos"
             className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
-          >
-            Dashboard
-          </a>
-          <a
-            href="#events"
-            className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
+            onClick={toggleMenu}
           >
             Eventos
-          </a>
-          <a
-            href="#financial"
+          </Link>
+          <Link
+            to="/financiero"
             className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
+            onClick={toggleMenu}
           >
             Financiero
-          </a>
-          <a
-            href="#members"
+          </Link>
+          <Link
+            to="/miembros"
             className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
+            onClick={toggleMenu}
           >
             Miembros
-          </a>
-          <a
-            href="#scholarships"
+          </Link>
+          <Link
+            to="/becas"
             className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
+            onClick={toggleMenu}
           >
             Becas
-          </a>
-          <a
-            href="#students"
+          </Link>
+          <Link
+            to="/estudiantes"
             className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
+            onClick={toggleMenu}
           >
             Estudiantes
-          </a>
+          </Link>
           <div className="pt-4 pb-3 border-t border-white border-opacity-10">
             <div className="flex items-center px-3">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">A</span>
-                </div>
+              <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">A</span>
               </div>
               <div className="ml-3">
                 <div className="text-base font-medium text-white">Admin</div>
