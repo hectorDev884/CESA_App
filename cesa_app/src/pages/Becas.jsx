@@ -1,10 +1,196 @@
-import React from "react";
+import React, { useState } from "react";
+import SummaryCard from "../components/SummaryCard.jsx";
 
 export default function Becas() {
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+
+  const [becas, setBecas] = useState([
+    {
+      id: 1,
+      estudiante: "Héctor Manuel Torres Cuevas",
+      tipo: "Alimenticia",
+      fechaInicio: "2024-02-01",
+      fechaFin: "2025-02-01",
+      estado: "Activa",
+    },
+    {
+      id: 2,
+      estudiante: "Jairo Giovanni Álvarez Juárez",
+      tipo: "Alimenticia",
+      fechaInicio: "2024-03-01",
+      fechaFin: "2025-03-01",
+      estado: "Pendiente de revisión",
+    },
+    {
+      id: 3,
+      estudiante: "Oziel Ubaldo Venegas Nieves",
+      tipo: "Alimenticia",
+      fechaInicio: "2023-09-01",
+      fechaFin: "2024-09-01",
+      estado: "Finalizada",
+    },
+  ]);
+
+  const handleSearch = () => {
+    setSearch(searchInput);
+  };
+
+  const filteredBecas = becas.filter(
+    (b) =>
+      b.estudiante.toLowerCase().includes(search.toLowerCase()) ||
+      b.tipo.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleDelete = (id) => {
+    setBecas(becas.filter((b) => b.id !== id));
+  };
+
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold text-gray-900">Página de Becas</h1>
-      <p className="mt-2 text-gray-600">Aquí puedes ver todos los detalles de las becas disponibles.</p>
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Gestión de Becas</h1>
+        <button
+          className="mt-4 sm:mt-0 bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+          onClick={() => alert("Ir a formulario para agregar beca")}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          Agregar Beca
+        </button>
+      </div>
+
+      {/* Barra de búsqueda */}
+      <div className="mb-6 flex flex-col md:flex-row gap-2">
+        <input
+          type="text"
+          placeholder="Buscar beca por estudiante o tipo..."
+          className="w-full md:w-1/2 px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+        <button
+          onClick={handleSearch}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+        >
+          Buscar
+        </button>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <SummaryCard title="Becas Activas" mainText="12" subText="En curso actualmente" />
+        <SummaryCard title="Pendientes de Revisión" mainText="3" subText="En espera de aprobación" />
+        <SummaryCard title="Becas Finalizadas" mainText="5" subText="Concluidas este año" />
+      </div>
+
+      {/* Tabla de becas */}
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                Estudiante
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                Tipo de Beca
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                Fecha Inicio
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                Fecha Fin
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                Estado
+              </th>
+              <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {filteredBecas.map((b) => (
+              <tr key={b.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 text-sm text-gray-900">{b.estudiante}</td>
+                <td className="px-4 py-3 text-sm text-[#036942] font-medium">{b.tipo}</td>
+                <td className="px-4 py-3 text-sm text-gray-700">{b.fechaInicio}</td>
+                <td className="px-4 py-3 text-sm text-gray-700">{b.fechaFin}</td>
+                <td className="px-4 py-3">
+                  <span
+                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      b.estado === "Activa"
+                        ? "bg-green-100 text-green-700"
+                        : b.estado === "Pendiente de revisión"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    {b.estado}
+                  </span>
+                </td>
+                <td className="px-4 py-3 flex justify-center gap-3">
+                  {/* Editar */}
+                  <button className="text-blue-600 hover:text-blue-800">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536M9 13l3 3 8-8-3-3-8 8z"
+                      />
+                    </svg>
+                  </button>
+                  {/* Eliminar */}
+                  <button
+                    onClick={() => handleDelete(b.id)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Footer */}
+        <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600">
+          Mostrando {filteredBecas.length} de {becas.length} becas
+        </div>
+      </div>
     </div>
   );
 }
