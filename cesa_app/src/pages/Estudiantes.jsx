@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import SummaryCard from "../components/SummaryCard.jsx";
+import { useNavigate } from "react-router-dom";
+
 
 export default function Estudiantes() {
+  const navigate = useNavigate();
   const [students, setStudents] = useState([
     {
       numeroControl: "22290696",
@@ -83,12 +86,16 @@ export default function Estudiantes() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Gestión de Estudiantes</h1>
-        <button className="mt-4 sm:mt-0 bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+        <button
+          onClick={() => navigate("/agregar-estudiante")}
+          className="mt-4 sm:mt-0 bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 hover:cursor-pointer"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Agregar Estudiante
         </button>
+
       </div>
 
       {/* Barra de búsqueda con botón */}
@@ -102,7 +109,7 @@ export default function Estudiantes() {
         />
         <button
           onClick={handleSearch}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          className="bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 hover:cursor-pointer"
         >
           Buscar
         </button>
@@ -140,13 +147,12 @@ export default function Estudiantes() {
                 <td className="px-4 py-3 text-sm text-gray-700">{student.telefono}</td>
                 <td className="px-4 py-3 text-sm text-gray-700">{student.fechaRegistro}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    student.status === "Activo"
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${student.status === "Activo"
                       ? "bg-green-100 text-green-700"
                       : student.status === "En espera"
                         ? "bg-yellow-100 text-yellow-700"
                         : "bg-red-100 text-red-700"
-                  }`}>
+                    }`}>
                     {student.status}
                   </span>
                 </td>
