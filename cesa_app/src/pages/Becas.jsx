@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import SummaryCard from "../components/SummaryCard.jsx";
+import { useNavigate } from "react-router-dom";
 
 export default function Becas() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
 
   const [becas, setBecas] = useState([
     {
@@ -52,8 +54,8 @@ export default function Becas() {
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Gestión de Becas</h1>
         <button
-          className="mt-4 sm:mt-0 bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
-          onClick={() => alert("Ir a formulario para agregar beca")}
+          className="mt-4 sm:mt-0 bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 hover:cursor-pointer"
+          onClick={() => navigate("/agregar-beca")}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -84,7 +86,7 @@ export default function Becas() {
         />
         <button
           onClick={handleSearch}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 hover:cursor-pointer"
         >
           Buscar
         </button>
