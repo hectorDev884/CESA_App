@@ -8,6 +8,8 @@ import Becas from "./pages/Becas.jsx";
 import Eventos from "./pages/Eventos.jsx";
 import Miembros from "./pages/Miembros.jsx";
 import Financiero from "./pages/Financiero.jsx";
+import AgregarEstudiantesForm from "./components/AgregarEstudiantesForm.jsx";
+import RegistrarBecaForm from "./components/RegistrarBecasForm.jsx";
 
 
 function App() {
@@ -27,6 +29,9 @@ function App() {
             <Route path="/eventos" element={<Eventos />} />
             <Route path="/miembros" element={<Miembros />} />
             <Route path="/financiero" element={<Financiero />} />
+            <Route path="/agregar-estudiante" element={<AgregarEstudiantesForm />} />
+            <Route path="/agregar-beca" element={<RegistrarBecaForm />} />
+            {/* Add more routes as needed  TODO: AgregarBecas route*/ }
           </Routes>
           {/* Footer */}
           <Footer />
