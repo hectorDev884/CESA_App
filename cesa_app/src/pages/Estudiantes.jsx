@@ -109,7 +109,7 @@ export default function Estudiantes() {
         />
         <button
           onClick={handleSearch}
-          className="bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 hover:cursor-pointer"
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 hover:cursor-pointer"
         >
           Buscar
         </button>
