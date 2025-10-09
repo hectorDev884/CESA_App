@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import SummaryCard from "../components/SummaryCard.jsx";
 import { useNavigate } from "react-router-dom";
+import CalendarioModal from "../components/CalendarioModal.jsx"; // <--- nuevo modal
 
 export default function Becas() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [showModal, setShowModal] = useState(false); // <-- estado del modal
   const navigate = useNavigate();
 
   const [becas, setBecas] = useState([
@@ -48,31 +50,45 @@ export default function Becas() {
     setBecas(becas.filter((b) => b.id !== id));
   };
 
+  const handleGenerateCalendar = (data) => {
+    console.log("📅 Datos del calendario generados:", data);
+    setShowModal(false);
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Gestión de Becas</h1>
-        <button
-          className="mt-4 sm:mt-0 bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 hover:cursor-pointer"
-          onClick={() => navigate("/agregar-beca")}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        <div className="flex gap-3">
+          <button
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+            onClick={() => setShowModal(true)}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Agregar Beca
-        </button>
+            Generar Calendario
+          </button>
+
+          <button
+            className="bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 hover:cursor-pointer"
+            onClick={() => navigate("/agregar-beca")}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Agregar Beca
+          </button>
+        </div>
       </div>
 
       {/* Barra de búsqueda */}
@@ -104,24 +120,12 @@ export default function Becas() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                Estudiante
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                Tipo de Beca
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                Fecha Inicio
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                Fecha Fin
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                Estado
-              </th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                Acciones
-              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Estudiante</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tipo de Beca</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Fecha Inicio</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Fecha Fin</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Estado</th>
+              <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -145,42 +149,14 @@ export default function Becas() {
                   </span>
                 </td>
                 <td className="px-4 py-3 flex justify-center gap-3">
-                  {/* Editar */}
                   <button className="text-blue-600 hover:text-blue-800">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15.232 5.232l3.536 3.536M9 13l3 3 8-8-3-3-8 8z"
-                      />
-                    </svg>
+                    ✏️
                   </button>
-                  {/* Eliminar */}
                   <button
                     onClick={() => handleDelete(b.id)}
                     className="text-red-600 hover:text-red-800"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
+                    ❌
                   </button>
                 </td>
               </tr>
@@ -188,11 +164,18 @@ export default function Becas() {
           </tbody>
         </table>
 
-        {/* Footer */}
         <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600">
           Mostrando {filteredBecas.length} de {becas.length} becas
         </div>
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <CalendarioModal
+          onClose={() => setShowModal(false)}
+          onGenerate={handleGenerateCalendar}
+        />
+      )}
     </div>
   );
 }
