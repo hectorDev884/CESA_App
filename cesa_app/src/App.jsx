@@ -7,7 +7,7 @@ import Footer from "./components/Footer.jsx";
 import Becas from "./pages/Becas.jsx";
 import Eventos from "./pages/Eventos.jsx";
 import Miembros from "./pages/Miembros.jsx";
-import Financiero from "./pages/Financiero.jsx";
+import Financiero from "./pages/Financieros.jsx";
 import AgregarEstudiantesForm from "./components/AgregarEstudiantesForm.jsx";
 import RegistrarBecaForm from "./components/RegistrarBecasForm.jsx";
 
@@ -31,6 +31,7 @@ function App() {
             <Route path="/financiero" element={<Financiero />} />
             <Route path="/agregar-estudiante" element={<AgregarEstudiantesForm />} />
             <Route path="/agregar-beca" element={<RegistrarBecaForm />} />
+
             {/* Add more routes as needed  TODO: AgregarBecas route*/ }
           </Routes>
           {/* Footer */}
