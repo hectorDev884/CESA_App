@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import SummaryCard from "../components/SummaryCard.jsx";
 import { useNavigate } from "react-router-dom";
-import CalendarioModal from "../components/CalendarioModal.jsx"; // <--- nuevo modal
+import CalendarioModal from "../components/CalendarioModal.jsx";
+import EditarBecasModal from "../components/EditarBecasModal.jsx"; // 👈 nuevo modal de edición
 
 export default function Becas() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
-  const [showModal, setShowModal] = useState(false); // <-- estado del modal
+  const [showModal, setShowModal] = useState(false); // modal de calendario
+  const [showEditModal, setShowEditModal] = useState(false); // 👈 modal de edición
+  const [selectedBeca, setSelectedBeca] = useState(null); // 👈 beca que se está editando
   const navigate = useNavigate();
 
   const [becas, setBecas] = useState([
@@ -36,9 +39,7 @@ export default function Becas() {
     },
   ]);
 
-  const handleSearch = () => {
-    setSearch(searchInput);
-  };
+  const handleSearch = () => setSearch(searchInput);
 
   const filteredBecas = becas.filter(
     (b) =>
@@ -53,6 +54,44 @@ export default function Becas() {
   const handleGenerateCalendar = (data) => {
     console.log("📅 Datos del calendario generados:", data);
     setShowModal(false);
+  };
+
+  // 👇 abrir modal de edición
+  const handleEdit = (beca) => {
+    setSelectedBeca({
+      ID_Estudiante: beca.id,
+      Tipo_Beca: beca.tipo,
+      Fecha_Solicitud: beca.fechaInicio,
+      Fecha_Aprobacion: "",
+      Fecha_Entrega: beca.fechaFin,
+      Estatus: beca.estado,
+      Observaciones: "",
+      Notas_Internas: "",
+      archivo: null,
+    });
+    setShowEditModal(true);
+  };
+
+  // 👇 guardar cambios
+  const handleSaveEdit = (formData) => {
+    console.log("💾 Datos guardados:", formData);
+
+    setBecas((prev) =>
+      prev.map((b) =>
+        b.id === formData.ID_Estudiante
+          ? {
+              ...b,
+              tipo: formData.Tipo_Beca,
+              fechaInicio: formData.Fecha_Solicitud,
+              fechaFin: formData.Fecha_Entrega,
+              estado: formData.Estatus,
+            }
+          : b
+      )
+    );
+
+    setShowEditModal(false);
+    setSelectedBeca(null);
   };
 
   return (
@@ -149,12 +188,15 @@ export default function Becas() {
                   </span>
                 </td>
                 <td className="px-4 py-3 flex justify-center gap-3">
-                  <button className="text-blue-600 hover:text-blue-800">
+                  <button
+                    className="text-blue-600 hover:text-blue-800 hover:cursor-pointer"
+                    onClick={() => handleEdit(b)}
+                  >
                     ✏️
                   </button>
                   <button
                     onClick={() => handleDelete(b.id)}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-red-600 hover:text-red-800 hover:cursor-pointer"
                   >
                     ❌
                   </button>
@@ -169,11 +211,20 @@ export default function Becas() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal de calendario */}
       {showModal && (
         <CalendarioModal
           onClose={() => setShowModal(false)}
           onGenerate={handleGenerateCalendar}
+        />
+      )}
+
+      {/* Modal de edición */}
+      {showEditModal && selectedBeca && (
+        <EditarBecasModal
+          onClose={() => setShowEditModal(false)}
+          onSave={handleSaveEdit}
+          becaData={selectedBeca}
         />
       )}
     </div>
