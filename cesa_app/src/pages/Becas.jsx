@@ -3,7 +3,7 @@ import SummaryCard from "../components/SummaryCard.jsx";
 import { useNavigate } from "react-router-dom";
 import CalendarioModal from "../components/CalendarioModal.jsx";
 import EditarBecasModal from "../components/EditarBecasModal.jsx"; // 👈 nuevo modal de edición
-
+import { getEstudiantes } from "../services/api_becas_estudiante.js"
 export default function Becas() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -80,12 +80,12 @@ export default function Becas() {
       prev.map((b) =>
         b.id === formData.ID_Estudiante
           ? {
-              ...b,
-              tipo: formData.Tipo_Beca,
-              fechaInicio: formData.Fecha_Solicitud,
-              fechaFin: formData.Fecha_Entrega,
-              estado: formData.Estatus,
-            }
+            ...b,
+            tipo: formData.Tipo_Beca,
+            fechaInicio: formData.Fecha_Solicitud,
+            fechaFin: formData.Fecha_Entrega,
+            estado: formData.Estatus,
+          }
           : b
       )
     );
@@ -176,13 +176,12 @@ export default function Becas() {
                 <td className="px-4 py-3 text-sm text-gray-700">{b.fechaFin}</td>
                 <td className="px-4 py-3">
                   <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      b.estado === "Activa"
+                    className={`px-2 py-1 text-xs font-semibold rounded-full ${b.estado === "Activa"
                         ? "bg-green-100 text-green-700"
                         : b.estado === "Pendiente de revisión"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
                   >
                     {b.estado}
                   </span>
