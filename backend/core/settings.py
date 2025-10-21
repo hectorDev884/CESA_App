@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 import dj_database_url
+from django.db.utils import OperationalError
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -59,20 +60,32 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-DATABASE_URL = os.getenv('DATABASE_URL')
+import dj_database_url
+import os
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-    }
+    try:
+        DATABASES = {
+            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        }
+    except OperationalError:
+        print("⚠️ No se pudo conectar a Supabase. Usando base local.")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            }
+        }
 else:
-    # Fallback to SQLite if DATABASE_URL not provided
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
+
 
 # --- Password validators, internationalization, static, etc.
 AUTH_PASSWORD_VALIDATORS = [

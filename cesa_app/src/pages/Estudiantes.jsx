@@ -158,16 +158,12 @@ export default function Estudiantes() {
                 </td>
                 <td className="px-4 py-3 flex justify-center gap-3">
                   {/* Edit */}
-                  <button className="text-blue-600 hover:text-blue-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l3 3 8-8-3-3-8 8z" />
-                    </svg>
+                  <button className="text-blue-600 hover:text-blue-800 hover:cursor-pointer">
+                    ✏️
                   </button>
                   {/* Delete */}
-                  <button onClick={() => handleDelete(student.numeroControl)} className="text-red-600 hover:text-red-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                  <button onClick={() => handleDelete(student.numeroControl)} className="text-red-600 hover:text-red-800 hover:cursor-pointer">
+                    ❌
                   </button>
                 </td>
               </tr>
