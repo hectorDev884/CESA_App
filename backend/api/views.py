@@ -16,6 +16,6 @@ class BecaViewSet(viewsets.ModelViewSet):
     queryset = Beca.objects.all()
     serializer_class = BecaSerializer
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ['tipo_beca', 'estatus', 'numero_control', 
+    search_fields = ['tipo_beca', 'estatus', 'numero_control__numero_control', 
                      'numero_control__nombre', 'numero_control__apellido']
     ordering_fields = ['tipo_beca', 'estatus']
