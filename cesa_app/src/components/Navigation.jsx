@@ -50,6 +50,12 @@ const Navigation = () => {
               >
                 Estudiantes
               </Link>
+              <Link
+                to="/oficios"
+                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
+              >
+                Oficios
+              </Link>
             </div>
           </div>
 
@@ -100,7 +106,6 @@ const Navigation = () => {
       {/* Mobile Navigation */}
       <div className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#036942] border-t border-white border-opacity-10">
-          
           <Link
             to="/eventos"
             className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
@@ -135,6 +140,13 @@ const Navigation = () => {
             onClick={toggleMenu}
           >
             Estudiantes
+          </Link>
+          <Link
+            to="/oficios"
+            className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
+            onClick={toggleMenu}
+          >
+            Oficios
           </Link>
           <div className="pt-4 pb-3 border-t border-white border-opacity-10">
             <div className="flex items-center px-3">
