@@ -1,11 +1,47 @@
 import React, { useState, useEffect } from "react";
 
 export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }) {
+  // 🔹 Listas fijas de categorías
+  const categoriasFijas = {
+    Ingreso: [
+      { nombre: "Cuotas de alumnos", descripcion: "Aportaciones semestrales o anuales de estudiantes" },
+      { nombre: "Aportaciones del comité", descripcion: "Donaciones o cuotas internas de los miembros" },
+      { nombre: "Donaciones externas", descripcion: "Apoyos de exalumnos, maestros o terceros" },
+      { nombre: "Patrocinios", descripcion: "Apoyos económicos de empresas o negocios" },
+      { nombre: "Venta de boletos", descripcion: "Ingreso por eventos sociales, culturales o deportivos" },
+      { nombre: "Venta de comida o snacks", descripcion: "Ganancia de ventas en eventos o puntos fijos" },
+      { nombre: "Venta de productos", descripcion: "Playeras, tazas, stickers u otros artículos" },
+      { nombre: "Rifas y sorteos", descripcion: "Recaudación por venta de boletos de rifas" },
+      { nombre: "Reembolsos", descripcion: "Devoluciones de fondos o pagos no usados" },
+      { nombre: "Apoyos institucionales", descripcion: "Fondos otorgados por la escuela o facultad" },
+      { nombre: "Servicios internos", descripcion: "Cobro por fotocopias, impresiones, etc." },
+    ],
+    Egreso: [
+      { nombre: "Decoración y ambientación", descripcion: "Material para eventos o actividades" },
+      { nombre: "Alimentos y bebidas", descripcion: "Compra de comida para eventos o reuniones" },
+      { nombre: "Transporte", descripcion: "Gasolina o renta de vehículos para actividades" },
+      { nombre: "Premios y reconocimientos", descripcion: "Medallas, trofeos o regalos" },
+      { nombre: "Material de oficina", descripcion: "Papelería, carpetas, marcadores, etc." },
+      { nombre: "Equipo y mantenimiento", descripcion: "Bocinas, proyectores, mobiliario, reparaciones" },
+      { nombre: "Publicidad y difusión", descripcion: "Impresiones, carteles, redes sociales" },
+      { nombre: "Becas o apoyos a alumnos", descripcion: "Ayudas económicas o materiales escolares" },
+      { nombre: "Actividades culturales", descripcion: "Gastos de organización de ferias o talleres" },
+      { nombre: "Actividades deportivas", descripcion: "Balones, uniformes, material deportivo" },
+      { nombre: "Software o licencias", descripcion: "Herramientas digitales o suscripciones" },
+      { nombre: "Renta de espacios", descripcion: "Pago de salones o lugares para eventos" },
+      { nombre: "Limpieza y mantenimiento", descripcion: "Artículos de limpieza o servicio de apoyo" },
+      { nombre: "Donaciones o causas sociales", descripcion: "Apoyos a campañas o colectas" },
+      { nombre: "Gastos bancarios", descripcion: "Comisiones o mantenimiento de cuenta" },
+      { nombre: "Emergencias e imprevistos", descripcion: "Cualquier gasto no planificado" },
+    ],
+  };
+
   const [formData, setFormData] = useState({
     concepto: "",
     tipo: "Ingreso",
     monto: "",
     categoria: "",
+    descripcion: "",
     fecha: "",
   });
 
@@ -15,13 +51,32 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    // 🔸 Si cambia el tipo, reiniciamos la categoría y descripción
+    if (name === "tipo") {
+      setFormData({
+        ...formData,
+        tipo: value,
+        categoria: "",
+        descripcion: "",
+      });
+    } else if (name === "categoria") {
+      const cat = categoriasFijas[formData.tipo].find((c) => c.nombre === value);
+      setFormData({
+        ...formData,
+        categoria: value,
+        descripcion: cat ? cat.descripcion : "",
+      });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
   };
+
+  const categoriasDisponibles = categoriasFijas[formData.tipo];
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
@@ -38,6 +93,7 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Concepto */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Concepto</label>
             <input
@@ -50,6 +106,7 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
             />
           </div>
 
+          {/* Tipo */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Tipo</label>
             <select
@@ -63,6 +120,33 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
             </select>
           </div>
 
+          {/* Categoría */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Categoría</label>
+            <select
+              name="categoria"
+              value={formData.categoria}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">Selecciona una categoría</option>
+              {categoriasDisponibles.map((c, index) => (
+                <option key={index} value={c.nombre}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Descripción automática */}
+          {formData.descripcion && (
+            <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm text-gray-700">
+              <strong>Descripción: </strong> {formData.descripcion}
+            </div>
+          )}
+
+          {/* Monto */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Monto</label>
             <input
@@ -75,17 +159,7 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Categoría</label>
-            <input
-              type="text"
-              name="categoria"
-              value={formData.categoria}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-
+          {/* Fecha */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Fecha</label>
             <input
@@ -98,6 +172,7 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
             />
           </div>
 
+          {/* Botones */}
           <div className="flex justify-end gap-3 mt-6">
             <button
               type="button"
