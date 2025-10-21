@@ -8,10 +8,12 @@ async function apiFetch(url, options = {}) {
     },
     ...options,
   });
+
   if (!response.ok) {
     const errText = await response.text();
     throw new Error(`Error ${response.status}: ${errText}`);
   }
+
   return response.json();
 }
 
@@ -45,13 +47,32 @@ export function deleteEstudiante(id) {
 }
 
 // --- Becas ---
-export function getBecas() {
-  return apiFetch('/becas/');
+// ✅ getBecas ahora acepta query opcional para search/ordering
+export function getBecas(query = "") {
+  const q = query ? `?${query}` : "";
+  return apiFetch(`/becas/${q}`);
+}
+
+export function getBeca(id) {
+  return apiFetch(`/becas/${id}/`);
 }
 
 export function createBeca(data) {
   return apiFetch('/becas/', {
     method: 'POST',
     body: JSON.stringify(data),
+  });
+}
+
+export function updateBeca(id, data) {
+  return apiFetch(`/becas/${id}/`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteBeca(id) {
+  return apiFetch(`/becas/${id}/`, {
+    method: 'DELETE',
   });
 }
