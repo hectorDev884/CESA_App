@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 export default function AddOffice() {
   const [tipo, setTipo] = useState("");
-  const [descripcion, setDescripcion] = useState("");
+  const [asunto, setAsunto] = useState("");
   const [destinatario, setDestinatario] = useState("");
   const [cuerpoTexto, setCuerpoTexto] = useState("");
 
@@ -12,7 +12,7 @@ export default function AddOffice() {
   const [editIndex, setEditIndex] = useState(null);
 
   const generarOficio = async () => {
-    if (!tipo || !descripcion || !destinatario || !cuerpoTexto) {
+    if (!tipo || !asunto || !destinatario || !cuerpoTexto) {
       alert(
         "Por favor, complete todos los campos requeridos para generar el oficio."
       );
@@ -41,9 +41,9 @@ export default function AddOffice() {
 
     const dataToSend = {
       tipo_oficio: prefijoTipo,
-      descripcion: descripcion,
+      asunto: asunto,
       destinatario: destinatario,
-      cuerpoTexto: cuerpoTexto,
+      cuerpo_texto: cuerpoTexto,
     };
 
     try {
@@ -69,7 +69,7 @@ export default function AddOffice() {
         }
 
         setTipo("");
-        setDescripcion("");
+        setAsunto("");
         setDestinatario("");
         setCuerpoTexto("");
       } else {
@@ -165,9 +165,9 @@ export default function AddOffice() {
           </label>
           <input
             type="text"
-            placeholder="descripcion breve que aparecerá en el oficio"
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
+            placeholder="asunto breve que aparecerá en el oficio"
+            value={asunto}
+            onChange={(e) => setAsunto(e.target.value)}
             className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
@@ -197,7 +197,7 @@ export default function AddOffice() {
               onClick={() => {
                 setEditIndex(null);
                 setTipo("");
-                setDescripcion("");
+                setAsunto("");
                 setDestinatario("");
                 setCuerpoTexto("");
               }}
