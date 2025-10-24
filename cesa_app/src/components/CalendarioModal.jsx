@@ -30,7 +30,7 @@ export default function CalendarioModal({ onClose, onGenerate }) {
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative animate-fadeIn border border-gray-200">
         {/* Botón de cerrar */}
         <button
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg transition-colors"
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg transition-colors hover:cursor-pointer"
           onClick={onClose}
         >
           ✖
@@ -88,13 +88,13 @@ export default function CalendarioModal({ onClose, onGenerate }) {
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium hover:cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium hover:cursor-pointer"
             >
               Generar
             </button>

@@ -1,97 +1,167 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getEstudiantes, createBeca } from "../services/api_becas_estudiante.js";
 
 export default function RegistrarBecaForm() {
   const navigate = useNavigate();
 
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchEstudiante, setSearchEstudiante] = useState(""); // Para filtrar
   const [formData, setFormData] = useState({
-    ID_Estudiante: "",
-    Tipo_Beca: "Alimentos",
-    Fecha_Solicitud: new Date().toISOString().split("T")[0],
-    Fecha_Aprobacion: "",
-    Fecha_Entrega: "",
-    Estatus: "Pendiente",
-    Observaciones: "",
-    Notas_Internas: "",
-    archivo: null,
+    numero_control: "",
+    tipo_beca: "Alimenticia",
+    fecha_solicitud: new Date().toISOString().split("T")[0],
+    fecha_aprobacion: "",
+    fecha_entrega: "",
+    fecha_fin: "",
+    estatus: "pendiente",
+    observaciones: "",
+    notas_internas: "",
   });
 
+  // 🔄 Obtener estudiantes
+  useEffect(() => {
+    async function fetchEstudiantes() {
+      try {
+        const data = await getEstudiantes();
+        setEstudiantes(data);
+      } catch (err) {
+        console.error("Error cargando estudiantes:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchEstudiantes();
+  }, []);
+
+  // 🖋️ Manejo de inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = (e) => {
-    setFormData({ ...formData, archivo: e.target.files[0] });
+  const handleSearchChange = (e) => {
+    setSearchEstudiante(e.target.value);
   };
 
-  const handleSubmit = (e) => {
+  // 🔍 Filtrar estudiantes por búsqueda
+  const filteredEstudiantes = estudiantes.filter(
+    (est) =>
+      est.nombre.toLowerCase().includes(searchEstudiante.toLowerCase()) ||
+      est.apellido.toLowerCase().includes(searchEstudiante.toLowerCase()) ||
+      String(est.numero_control).includes(searchEstudiante)
+  );
+
+  // Solo mostrar los primeros 10 si no hay búsqueda
+  const displayedEstudiantes =
+    searchEstudiante.trim() === ""
+      ? filteredEstudiantes.slice(0, 10)
+      : filteredEstudiantes;
+
+  // 📨 Envío del formulario
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Nueva beca registrada:", formData);
+    try {
+      const newBeca = {
+        numero_control: parseInt(formData.numero_control, 10), // ⚠ aseguramos que sea entero
+        tipo_beca: formData.tipo_beca,
+        fecha_solicitud: formData.fecha_solicitud || null,
+        fecha_aprobacion: formData.fecha_aprobacion || null,
+        fecha_entrega: formData.fecha_entrega || null,
+        fecha_fin: formData.fecha_fin || null,
+        estatus: formData.estatus,
+        observaciones: formData.observaciones || "",
+        notas_internas: formData.notas_internas || "",
+      };
 
-    // Para enviar a tu API (ejemplo con fetch):
-    // const data = new FormData();
-    // Object.entries(formData).forEach(([key, value]) => {
-    //   data.append(key, value);
-    // });
-    // fetch("/api/becas", { method: "POST", body: data });
-
-    navigate("/"); // Redirigir después del registro
+      await createBeca(newBeca);
+      alert("✅ Beca registrada exitosamente");
+      navigate("/becas");
+    } catch (error) {
+      console.error("❌ Error registrando beca:", error);
+      alert("Error al registrar la beca.");
+    }
   };
+
+  if (loading) return <p className="text-center mt-10">Cargando estudiantes...</p>;
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-6 mt-10 rounded-lg shadow">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Registrar Beca</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
 
-        {/* ID Estudiante */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Buscar estudiante */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">ID del Estudiante</label>
+          <label className="block text-sm font-medium text-gray-700">Buscar estudiante</label>
           <input
-            type="number"
-            name="ID_Estudiante"
-            value={formData.ID_Estudiante}
+            type="text"
+            placeholder="Nombre, apellido o número de control..."
+            value={searchEstudiante}
+            onChange={handleSearchChange}
+            className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+
+        {/* Select de estudiantes */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Estudiante</label>
+          <select
+            name="numero_control"
+            value={formData.numero_control}
             onChange={handleChange}
             required
             className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
+          >
+            <option value="">Selecciona un estudiante</option>
+            {displayedEstudiantes.map((est) => (
+              <option key={est.numero_control} value={est.numero_control}>
+                {est.nombre} {est.apellido} — {est.numero_control}
+              </option>
+            ))}
+          </select>
+          {searchEstudiante.trim() === "" && estudiantes.length > 10 && (
+            <p className="text-sm text-gray-500 mt-1">
+              Mostrando los primeros 10 estudiantes. Usa el buscador para ver más.
+            </p>
+          )}
         </div>
 
         {/* Tipo de Beca */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Tipo de Beca</label>
           <select
-            name="Tipo_Beca"
-            value={formData.Tipo_Beca}
+            name="tipo_beca"
+            value={formData.tipo_beca}
             onChange={handleChange}
             className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
           >
-            <option value="Alimentos">Alimentos</option>
-            <option value="Transporte">Transporte</option>
-            <option value="Residencia">Residencia</option>
-            <option value="Académica">Académica</option>
+            <option value="alimenticia">Alimenticia</option>
+            <option value="transporte">Transporte</option>
+            <option value="residencia">Residencia</option>
+            <option value="academica">Académica</option>
           </select>
         </div>
 
         {/* Fechas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Fecha de Solicitud</label>
             <input
               type="date"
-              name="Fecha_Solicitud"
-              value={formData.Fecha_Solicitud}
+              name="fecha_solicitud"
+              value={formData.fecha_solicitud}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border rounded-lg"
               required
+              className="mt-1 block w-full px-3 py-2 border rounded-lg"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Fecha de Aprobación</label>
             <input
               type="date"
-              name="Fecha_Aprobacion"
-              value={formData.Fecha_Aprobacion}
+              name="fecha_aprobacion"
+              value={formData.fecha_aprobacion}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 border rounded-lg"
             />
@@ -100,8 +170,18 @@ export default function RegistrarBecaForm() {
             <label className="block text-sm font-medium text-gray-700">Fecha de Entrega</label>
             <input
               type="date"
-              name="Fecha_Entrega"
-              value={formData.Fecha_Entrega}
+              name="fecha_entrega"
+              value={formData.fecha_entrega}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 border rounded-lg"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Fecha de Fin</label>
+            <input
+              type="date"
+              name="fecha_fin"
+              value={formData.fecha_fin}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 border rounded-lg"
             />
@@ -112,15 +192,15 @@ export default function RegistrarBecaForm() {
         <div>
           <label className="block text-sm font-medium text-gray-700">Estatus</label>
           <select
-            name="Estatus"
-            value={formData.Estatus}
+            name="estatus"
+            value={formData.estatus}
             onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="mt-1 block w-full px-3 py-2 border rounded-lg"
           >
-            <option value="Pendiente">Pendiente</option>
-            <option value="Aprobada">Aprobada</option>
-            <option value="Entregada">Entregada</option>
-            <option value="Rechazada">Rechazada</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="aprobada">Aprobada</option>
+            <option value="entregada">Entregada</option>
+            <option value="rechazada">Rechazada</option>
           </select>
         </div>
 
@@ -128,11 +208,11 @@ export default function RegistrarBecaForm() {
         <div>
           <label className="block text-sm font-medium text-gray-700">Observaciones</label>
           <textarea
-            name="Observaciones"
-            value={formData.Observaciones}
+            name="observaciones"
+            value={formData.observaciones}
             onChange={handleChange}
             rows="3"
-            className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="mt-1 block w-full px-3 py-2 border rounded-lg"
           ></textarea>
         </div>
 
@@ -140,31 +220,19 @@ export default function RegistrarBecaForm() {
         <div>
           <label className="block text-sm font-medium text-gray-700">Notas Internas</label>
           <textarea
-            name="Notas_Internas"
-            value={formData.Notas_Internas}
+            name="notas_internas"
+            value={formData.notas_internas}
             onChange={handleChange}
             rows="2"
-            className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="mt-1 block w-full px-3 py-2 border rounded-lg"
           ></textarea>
-        </div>
-
-        {/* Archivos */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Subir archivos (foto, comprobantes, etc.)</label>
-          <input
-            type="file"
-            name="archivo"
-            onChange={handleFileChange}
-            accept=".jpg,.jpeg,.png,.pdf"
-            className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
-          />
         </div>
 
         {/* Botones */}
         <div className="flex justify-end gap-3 pt-4">
           <button
             type="button"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/becas")}
             className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 hover:cursor-pointer"
           >
             Cancelar

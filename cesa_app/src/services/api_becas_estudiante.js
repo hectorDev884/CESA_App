@@ -1,4 +1,4 @@
-// src/services/api.js
+// src/services/api_becas_estudiante.js
 const API_BASE = 'http://localhost:8000/api';
 
 async function apiFetch(url, options = {}) {
