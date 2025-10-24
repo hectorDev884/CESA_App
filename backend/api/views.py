@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from api.models import Estudiante, Beca
-from api.serializers import EstudianteSerializer, BecaSerializer
+from api.models import Estudiante, Beca, AsistenciaBeca
+from api.serializers import EstudianteSerializer, BecaSerializer, AsistenciaBecaSerializer
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 
@@ -19,3 +19,10 @@ class BecaViewSet(viewsets.ModelViewSet):
     search_fields = ['tipo_beca', 'estatus', 'numero_control__numero_control', 
                      'numero_control__nombre', 'numero_control__apellido']
     ordering_fields = ['tipo_beca', 'estatus']
+
+class AsistenciaBecaViewSet(viewsets.ModelViewSet):
+    queryset = AsistenciaBeca.objects.all()
+    serializer_class = AsistenciaBecaSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['beca_id__beca_id', 'asistencia_id']
+    
