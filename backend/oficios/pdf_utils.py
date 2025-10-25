@@ -18,6 +18,12 @@ IMAGENES_DIR = settings.BASE_DIR / 'assets'
 def header_footer_callback(canvas, doc):
     canvas.saveState()
 
+    # --- Configuración de Unidades y Constantes ---
+    PAGE_WIDTH = doc.pagesize[0]
+    PAGE_HEIGHT = doc.pagesize[1]
+    LEFT_MARGIN = doc.leftMargin
+    RIGHT_MARGIN = doc.rightMargin
+
     # LOGO TecNM
     TECNM_WIDTH = 2.57 * cm
     TECNM_HEIGHT = 1.27 * cm
@@ -79,6 +85,57 @@ def header_footer_callback(canvas, doc):
     except Exception as e:
         canvas.setFont(FONT_NAME_BOLD, 8)
         canvas.drawString(CESA_X, BASE_Y, f"CESA Logo Error: {e}")
+    
+    # --------------------------------------------------------
+    #             SECCIÓN DE PIE DE PÁGINA (Footer)
+    # --------------------------------------------------------
+
+    FOOTER_FONT_SIZE = 8
+    FOOTER_LINE_Y = 0.8 * cm  # Distancia desde el borde inferior de la página (22.68 pt)
+    TEXT_LINE_HEIGHT = 10     # Espaciado entre líneas del texto del contacto
+    # --- 1. Información de Contacto (Izquierda) ---
+    
+    # Posición inicial Y para el texto de contacto (justo debajo de la línea separadora)
+    contacto_y_pos = FOOTER_LINE_Y + (2 * TEXT_LINE_HEIGHT)
+    
+    canvas.setFont(FONT_NAME_BOLD, FOOTER_FONT_SIZE)
+    canvas.drawString(LEFT_MARGIN, contacto_y_pos + (2 * TEXT_LINE_HEIGHT), "Contacto:")
+    
+    canvas.setFont(FONT_NAME, FOOTER_FONT_SIZE)
+    canvas.drawString(LEFT_MARGIN, contacto_y_pos + TEXT_LINE_HEIGHT, "Correo: cesa@cdguzman.tecnm.mx")
+    canvas.drawString(LEFT_MARGIN, contacto_y_pos, "Teléfono: 33 1025 9280")
+    
+    
+    # --- 2. Contador de Página (Derecha) ---
+    
+    # Obtiene el número de página actual y el total (ReportLab necesita un pase de construcción para el total)
+    # El objeto doc.pageTemplate tiene la información del contador
+    page_num = canvas.getPageNumber()
+    
+    # Si quieres el formato "Página 1 de 5", necesitas el total (requiere dos pasadas o código más complejo).
+    # Para la primera pasada (pass 0), el total es desconocido, así que solo usamos el número actual.
+    # El método más simple para el formato "Página N de M" es usando la marca de agua (alias), pero
+    # para mantenerlo simple en el callback:
+    
+    page_text = f"Página {page_num}" # Se ajustará a "Página N de M" más tarde si se necesita el total.
+    
+    # Si usas SimpleDocTemplate, puedes establecer un alias para el total de páginas
+    # que se resuelve después de que el documento se construye la primera vez.
+    
+    # Usaremos el alias simple para el total de páginas: #PÁGINAS#
+    # El texto completo se resolverá después de la construcción.
+    # Por ahora, dejamos la marca para que ReportLab la resuelva:
+    page_total_alias = f"Página {page_num} de <pdf:pages/>"
+    
+    canvas.setFont(FONT_NAME, FOOTER_FONT_SIZE)
+    
+    # Posición X derecha: Anchura total menos el margen derecho menos la anchura del texto
+    # Usamos stringWidth para calcular dónde empezar a dibujar el texto para que termine en el margen derecho.
+    text_width = stringWidth(page_total_alias.replace('<pdf:pages/>', '99'), FONT_NAME, FOOTER_FONT_SIZE) # Estimamos el ancho
+    right_x = PAGE_WIDTH - RIGHT_MARGIN - text_width
+    
+    # Dibuja el texto del contador (ReportLab resolverá <pdf:pages/> automáticamente)
+    canvas.drawRightString(PAGE_WIDTH - RIGHT_MARGIN, FOOTER_LINE_Y + TEXT_LINE_HEIGHT, page_total_alias)
     
     canvas.restoreState()
 
@@ -152,7 +209,13 @@ def generar_pdf_oficio(oficio_obj):
 
     # Asunto
     story.append(Paragraph(f"<b>Asunto:</b> {oficio_obj.asunto}", styles['Base']))
-    story.append(Spacer(1, 30))
+
+    # ------------------ DESTINATARIO ------------------
+    destinatario = oficio_obj.destinatario
+
+    destinatario_oficio = destinatario
+    story.append(Paragraph(destinatario_oficio, styles['Atentamente']))
+    story.append(Spacer(1,15))
 
     # ------------------ CUERPO DEL OFICIO ------------------
     cuerpo_oficio_text = oficio_obj.cuerpo_texto
