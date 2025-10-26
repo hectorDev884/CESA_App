@@ -2,8 +2,8 @@ import React, { useState } from "react";
 
 export default function CalendarioModal({ onClose, onGenerate }) {
   const [nc, setNc] = useState("");
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [fechaFin, setFechaFin] = useState("");
+  const [fecha_inicio, setFechaInicio] = useState("");
+  const [fecha_fin, setFechaFin] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -13,15 +13,15 @@ export default function CalendarioModal({ onClose, onGenerate }) {
       return;
     }
 
-    if (!fechaInicio || !fechaFin) {
+    if (!fecha_inicio || !fecha_fin) {
       alert("Por favor selecciona ambas fechas.");
       return;
     }
 
     onGenerate({
       nc,
-      fechaInicio,
-      fechaFin,
+      fecha_inicio: fecha_inicio,
+      fecha_fin: fecha_fin,
     });
   };
 
@@ -64,7 +64,7 @@ export default function CalendarioModal({ onClose, onGenerate }) {
             </label>
             <input
               type="date"
-              value={fechaInicio}
+              value={fecha_inicio}
               onChange={(e) => setFechaInicio(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
             />
@@ -77,7 +77,7 @@ export default function CalendarioModal({ onClose, onGenerate }) {
             </label>
             <input
               type="date"
-              value={fechaFin}
+              value={fecha_fin}
               onChange={(e) => setFechaFin(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
             />
