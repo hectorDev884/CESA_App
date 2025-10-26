@@ -7,6 +7,7 @@ import {
   getBecas,
   updateBeca,
   deleteBeca,
+  generarCalendario
 } from "../services/api_becas_estudiante.js"; // backend real
 
 export default function Becas() {
@@ -74,11 +75,15 @@ export default function Becas() {
     }
   };
 
-  // --- 📅 Generar calendario (solo front)
-  const handleGenerateCalendar = (data) => {
-    console.log("📅 Datos del calendario generados:", data);
+  const handleGenerateCalendar = async (data) => {
+  try {
+    await generarCalendario(data);
     setShowModal(false);
-  };
+  } catch (err) {
+    console.error("❌ Error generando calendario:", err);
+    alert("Error al generar el calendario.");
+  }
+};
 
   // --- ✏️ Abrir modal de edición
   const handleEdit = (beca) => {
