@@ -1,9 +1,23 @@
 import React, { useState } from "react";
 
+const COLOR_MAP = {
+  red: "Rojo",
+  green: "Verde",
+  blue: "Azul",
+  orange: "Naranja",
+  purple: "Morado",
+  teal: "Verde Azulado",
+  yellow: "Amarillo",
+  pink: "Rosa",
+  gray: "Gris",
+  brown: "Marrón",
+};
+
 export default function CalendarioModal({ onClose, onGenerate }) {
   const [nc, setNc] = useState("");
   const [fecha_inicio, setFechaInicio] = useState("");
   const [fecha_fin, setFechaFin] = useState("");
+  const [color, setColor] = useState("red"); // Valor por defecto
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -22,6 +36,7 @@ export default function CalendarioModal({ onClose, onGenerate }) {
       nc,
       fecha_inicio: fecha_inicio,
       fecha_fin: fecha_fin,
+      color, // <-- Pasamos el color seleccionado
     });
   };
 
@@ -81,6 +96,24 @@ export default function CalendarioModal({ onClose, onGenerate }) {
               onChange={(e) => setFechaFin(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
             />
+          </div>
+
+          {/* Selector de color */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Color del encabezado
+            </label>
+            <select
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+            >
+              {Object.entries(COLOR_MAP).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Botones */}

@@ -121,13 +121,12 @@ export default function Estudiantes() {
       </div>
 
       {/* Cards resumen */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <SummaryCard title="Total Estudiantes" mainText={allStudents.length} subText="Estudiantes totales registrados" />
         <SummaryCard
           title="Nuevos Ingresos"
           mainText={allStudents.filter(e => new Date(e.fecha_registro).getMonth() === new Date().getMonth()).length}
           subText={`Registrados en ${new Date().toLocaleString("es-MX", { month: "long" })}`} />
-        <SummaryCard title="Asistencia Promedio" mainText="92%" />
       </div>
 
       {/* Tabla */}
