@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class Estudiante(models.Model):
     numero_control = models.IntegerField(primary_key=True)
@@ -16,10 +17,8 @@ class Estudiante(models.Model):
         
     def __str__(self):
         return self.nombre
-    
-from django.db import models
 
-class Beca(models.Model):
+class Beca(models.Model):   
     beca_id = models.AutoField(primary_key=True)  # Se asume serial/nextval en PostgreSQL
     numero_control = models.ForeignKey(Estudiante, 
                                        on_delete=models.CASCADE, 
@@ -31,6 +30,7 @@ class Beca(models.Model):
     fecha_solicitud = models.DateField(null=True, blank=True)
     fecha_aprobacion = models.DateField(null=True, blank=True)
     fecha_entrega = models.DateField(null=True, blank=True)
+    fecha_fin = models.DateField(null=True, blank=True, default=timezone.now)
     estatus = models.CharField(max_length=50, default='pendiente')
     observaciones = models.TextField(null=True, blank=True)
     notas_internas = models.TextField(null=True, blank=True)
@@ -41,3 +41,25 @@ class Beca(models.Model):
 
     def __str__(self):
         return f"{self.tipo_beca} - {self.estatus}"
+    
+class AsistenciaBeca(models.Model):
+    asistencia_id = models.AutoField(primary_key=True)
+    beca_id = models.ForeignKey(Beca, 
+                                on_delete=models.CASCADE, 
+                                db_column='beca_id', 
+                                null=True, 
+                                blank=True,
+                                related_name='asistencias')
+    fecha_inicio = models.DateField(null=True, blank=True)
+    fecha_fin = models.DateField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'asistencia_beca'
+        managed = False
+    
+    def __str__(self):
+        estudiante = getattr(self.beca_id, 'numero_control', None)
+        return f"Beca - {estudiante or 'Sin estudiante'}"
+
+
+ 

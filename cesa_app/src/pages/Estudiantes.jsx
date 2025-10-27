@@ -1,85 +1,91 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SummaryCard from "../components/SummaryCard.jsx";
 import { useNavigate } from "react-router-dom";
-
+import EditarEstudianteModal from "../components/EditarEstudianteModal.jsx";
+import {
+  getEstudiantes,
+  updateEstudiante,
+  deleteEstudiante,
+} from "../services/api_becas_estudiante.js";
 
 export default function Estudiantes() {
   const navigate = useNavigate();
-  const [students, setStudents] = useState([
-    {
-      numeroControl: "22290696",
-      nombre: "Héctor Manuel",
-      apellido: "Torres Cuevas",
-      email: "hector.torres@cesa.com",
-      carrera: "Ingeniería en Informática",
-      semestre: "7",
-      telefono: "341-123-4567",
-      fechaRegistro: "2023-09-01",
-      status: "Activo",
-    },
-    {
-      numeroControl: "22290698",
-      nombre: "Jairo Giovanni",
-      apellido: "Álvarez Juárez",
-      email: "jairo.alvarez@cesa.com",
-      carrera: "Ingeniería en Informática",
-      semestre: "7",
-      telefono: "341-234-5678",
-      fechaRegistro: "2023-09-02",
-      status: "Activo",
-    },
-    {
-      numeroControl: "22290699",
-      nombre: "Oziel Ubaldo",
-      apellido: "Venegas Nieves",
-      email: "oziel.venegas@cesa.com",
-      carrera: "Ingeniería en Informática",
-      semestre: "7",
-      telefono: "341-345-6789",
-      fechaRegistro: "2023-09-03",
-      status: "Activo",
-    },
-    {
-      numeroControl: "22290700",
-      nombre: "Santiago Abisai",
-      apellido: "Gonzalez Garcia",
-      email: "santiago.gonzalez@cesa.com",
-      carrera: "Ingeniería en Informática",
-      semestre: "7",
-      telefono: "341-456-7890",
-      fechaRegistro: "2023-09-04",
-      status: "Activo",
-    },
-    {
-      numeroControl: "22290697",
-      nombre: "Alan Emiliano",
-      apellido: "Garcia Lares",
-      email: "alan.garcia@cesa.com",
-      carrera: "Ingeniería en Informática",
-      semestre: "7",
-      telefono: "341-567-8901",
-      fechaRegistro: "2023-09-05",
-      status: "Activo",
-    },
-  ]);
 
+  // --- Estados para búsqueda y listado ---
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [allStudents, setAllStudents] = useState([]); // Lista completa
+  const [displayedStudents, setDisplayedStudents] = useState([]); // Lista filtrada
 
-  const handleDelete = (numeroControl) => {
-    setStudents(students.filter((s) => s.numeroControl !== numeroControl));
+  // --- Estados para modal ---
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  // --- 🔄 Cargar estudiantes ---
+  useEffect(() => {
+    fetchEstudiantes();
+  }, [search]);
+
+  async function fetchEstudiantes() {
+    try {
+      const query = search ? `search=${encodeURIComponent(search)}` : "";
+      const data = await getEstudiantes(query);
+      setAllStudents(data);
+    } catch (err) {
+      console.error("❌ Error al obtener estudiantes:", err);
+    }
+  }
+
+  // --- ✏️ Abrir modal de edición ---
+  const handleEdit = (student) => {
+    setSelectedStudent({ ...student });
+    setShowEditModal(true);
   };
 
-  // Filtrar estudiantes según search (solo se actualiza al presionar el botón)
-  const filteredStudents = students.filter(
-    (s) =>
-      `${s.nombre} ${s.apellido}`.toLowerCase().includes(search.toLowerCase()) ||
-      s.numeroControl.toLowerCase().includes(search.toLowerCase())
-  );
+  // --- 💾 Guardar cambios ---
+  const handleSaveEdit = async (formData) => {
+    try {
+      const updated = await updateEstudiante(selectedStudent.numero_control, formData);
+      setAllStudents((prev) =>
+        prev.map((s) =>
+          s.numero_control === selectedStudent.numero_control ? updated : s
+        )
+      );
+      setShowEditModal(false);
+      setSelectedStudent(null);
+    } catch (err) {
+      console.error("❌ Error al guardar cambios:", err);
+    }
+  };
 
+  // --- 🗑️ Eliminar estudiante ---
+  const handleDelete = async (numero_control) => {
+    if (!window.confirm("¿Seguro que deseas eliminar a este estudiante?")) return;
+    try {
+      await deleteEstudiante(numero_control);
+      setAllStudents((prev) =>
+        prev.filter((s) => s.numero_control !== numero_control)
+      );
+    } catch (err) {
+      console.error("❌ Error al eliminar estudiante:", err);
+    }
+  };
+
+  // --- 🔍 Búsqueda ---
   const handleSearch = () => {
-    setSearch(searchInput); // Aplicar filtro
+    setSearch(searchInput);
   };
+
+  // --- ✨ Filtrar estudiantes según búsqueda ---
+  useEffect(() => {
+    setDisplayedStudents(
+      allStudents.filter(
+        (s) =>
+          `${s.nombre} ${s.apellido}`.toLowerCase().includes(search.toLowerCase()) ||
+          s.numero_control.toString().includes(search)
+      )
+    );
+  }, [allStudents, search]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -95,10 +101,9 @@ export default function Estudiantes() {
           </svg>
           Agregar Estudiante
         </button>
-
       </div>
 
-      {/* Barra de búsqueda con botón */}
+      {/* Barra de búsqueda */}
       <div className="mb-6 flex flex-col md:flex-row gap-2">
         <input
           type="text"
@@ -115,14 +120,16 @@ export default function Estudiantes() {
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <SummaryCard title="Total Estudiantes" mainText={students.length} />
-        <SummaryCard title="Nuevos Ingresos" mainText="56" />
-        <SummaryCard title="Asistencia Promedio" mainText="92%" />
+      {/* Cards resumen */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <SummaryCard title="Total Estudiantes" mainText={allStudents.length} subText="Estudiantes totales registrados" />
+        <SummaryCard
+          title="Nuevos Ingresos"
+          mainText={allStudents.filter(e => new Date(e.fecha_registro).getMonth() === new Date().getMonth()).length}
+          subText={`Registrados en ${new Date().toLocaleString("es-MX", { month: "long" })}`} />
       </div>
 
-      {/* Table */}
+      {/* Tabla */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-100">
@@ -133,36 +140,29 @@ export default function Estudiantes() {
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Semestre</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Teléfono</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Fecha Registro</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Estado</th>
               <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {filteredStudents.map((student) => (
-              <tr key={student.numeroControl} className="hover:bg-gray-50">
+            {displayedStudents.map((student) => (
+              <tr key={student.numero_control} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm text-gray-900">{student.nombre} {student.apellido}</td>
-                <td className="px-4 py-3 text-sm text-[#036942] font-medium">{student.numeroControl}</td>
+                <td className="px-4 py-3 text-sm text-[#036942] font-medium">{student.numero_control}</td>
                 <td className="px-4 py-3 text-sm text-gray-700">{student.carrera}</td>
                 <td className="px-4 py-3 text-sm text-gray-700">{student.semestre}</td>
                 <td className="px-4 py-3 text-sm text-gray-700">{student.telefono}</td>
-                <td className="px-4 py-3 text-sm text-gray-700">{student.fechaRegistro}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${student.status === "Activo"
-                      ? "bg-green-100 text-green-700"
-                      : student.status === "En espera"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
-                    }`}>
-                    {student.status}
-                  </span>
-                </td>
+                <td className="px-4 py-3 text-sm text-gray-700">{student.fecha_registro?.split("T")[0] || "-"}</td>
                 <td className="px-4 py-3 flex justify-center gap-3">
-                  {/* Edit */}
-                  <button className="text-blue-600 hover:text-blue-800 hover:cursor-pointer">
+                  <button
+                    onClick={() => handleEdit(student)}
+                    className="text-blue-600 hover:text-blue-800 hover:cursor-pointer"
+                  >
                     ✏️
                   </button>
-                  {/* Delete */}
-                  <button onClick={() => handleDelete(student.numeroControl)} className="text-red-600 hover:text-red-800 hover:cursor-pointer">
+                  <button
+                    onClick={() => handleDelete(student.numero_control)}
+                    className="text-red-600 hover:text-red-800 hover:cursor-pointer"
+                  >
                     ❌
                   </button>
                 </td>
@@ -170,12 +170,19 @@ export default function Estudiantes() {
             ))}
           </tbody>
         </table>
-
-        {/* Footer */}
         <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600">
-          Mostrando {filteredStudents.length} de {students.length} estudiantes
+          Mostrando {displayedStudents.length} de {allStudents.length} estudiantes
         </div>
       </div>
+
+      {/* Modal de edición */}
+      {showEditModal && selectedStudent && (
+        <EditarEstudianteModal
+          onClose={() => setShowEditModal(false)}
+          onSave={handleSaveEdit}
+          estudianteData={selectedStudent}
+        />
+      )}
     </div>
   );
 }

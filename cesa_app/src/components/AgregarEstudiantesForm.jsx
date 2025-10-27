@@ -1,31 +1,47 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createEstudiante } from "../services/api_becas_estudiante.js"; // importa tu función de API
 
 export default function EstudianteForm() {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        numeroControl: "",
+        numero_control: "",
         nombre: "",
         apellido: "",
         email: "",
-        carrera: "Ingeniería en Informática",
+        carrera: "Ing. Informatica",
         semestre: "7",
         telefono: "",
-        fechaRegistro: new Date().toISOString().split("T")[0],
-        status: "Activo",
+        fecha_registro: new Date().toISOString().split("T")[0],
     });
+
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Nuevo estudiante:", formData);
-        // Later: send formData to Spring API with fetch or axios
-        navigate("/"); // go back to list after submit
+
+        if (!formData.numero_control || !formData.nombre || !formData.apellido || !formData.email) {
+            alert("Por favor completa todos los campos requeridos.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await createEstudiante(formData); // Llamada a la API
+            alert("Estudiante creado correctamente.");
+            navigate("/estudiantes"); // Regresa a la lista
+        } catch (err) {
+            console.error("❌ Error al crear estudiante:", err);
+            alert("Ocurrió un error al crear el estudiante.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -36,8 +52,8 @@ export default function EstudianteForm() {
                     <label className="block text-sm font-medium text-gray-700">Número de Control</label>
                     <input
                         type="text"
-                        name="numeroControl"
-                        value={formData.numeroControl}
+                        name="numero_control"
+                        value={formData.numero_control}
                         onChange={handleChange}
                         className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                         required
@@ -91,6 +107,18 @@ export default function EstudianteForm() {
                         className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
                 </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Carrera</label>
+                    <input
+                        type="text"
+                        name="carrera"
+                        value={formData.carrera}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                </div>
+
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Semestre</label>
                     <select
@@ -117,9 +145,10 @@ export default function EstudianteForm() {
                     </button>
                     <button
                         type="submit"
+                        disabled={loading}
                         className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 hover:cursor-pointer"
                     >
-                        Guardar
+                        {loading ? "Guardando..." : "Guardar"}
                     </button>
                 </div>
             </form>

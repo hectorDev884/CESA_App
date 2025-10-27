@@ -1,4 +1,4 @@
-// src/services/api.js
+// src/services/api_becas_estudiante.js
 const API_BASE = 'http://localhost:8000/api';
 
 async function apiFetch(url, options = {}) {
@@ -75,4 +75,45 @@ export function deleteBeca(id) {
   return apiFetch(`/becas/${id}/`, {
     method: 'DELETE',
   });
+}
+
+export async function generarCalendario(data) {
+  try {
+    // 🔹 Esperamos la respuesta del backend
+    const estudiante = await getEstudiante(data.nc); 
+    const nombreCompleto = `${estudiante.nombre} ${estudiante.apellido}`;
+
+    // 🔹 Construimos la URL con los parámetros GET
+    const params = new URLSearchParams({
+      nc: estudiante.numero_control,
+      nombre: nombreCompleto,
+      fecha_inicio: data.fecha_inicio,
+      fecha_fin: data.fecha_fin,
+      color: data.color,
+    });
+
+    const response = await fetch(`http://localhost:8000/api/pdf/asistencia?${params.toString()}`, {
+      method: "GET",
+    });
+
+    if (!response.ok || estudiante.becas.length === 0) {
+      const errText = await response.text();
+      throw new Error(`Error ${response.status}: ${errText}`);
+    }
+
+    // 🔹 Convertimos el PDF a blob
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    // 🔹 Descarga automática
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `calendario_${estudiante.numero_control}.pdf`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error("❌ Error generando calendario:", err);
+    alert("Error al generar el PDF de asistencia.");
+  }
 }
