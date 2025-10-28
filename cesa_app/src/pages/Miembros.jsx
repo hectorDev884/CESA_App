@@ -9,7 +9,9 @@ import {
   getMembers,
   deleteMember,
   getInteractions,
+  getAllInteractions,
 } from "../services/api_miembros.js";
+import NewInteraccionModal from "../components/NewInteraccionModal.jsx";
 
 export default function Miembros() {
   const [searchInput, setSearchInput] = useState("");
@@ -20,12 +22,24 @@ export default function Miembros() {
   const [selectedMember, setSelectedMember] = useState(null);
   const [members, setMembers] = useState([]);
   const [interacciones, setInteracciones] = useState([]);
+  const [showNewInteractionModal, setShowNewInteractionModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Solo obtener miembros cuando la vista actual sea 'Miembros'
     if (currentView === "Miembros") fetchMembers();
+    if (currentView === "Interacciones") fetchAllInteracciones();
   }, [search, currentView]);
+
+  const fetchAllInteracciones = async () => {
+    try {
+      const all = await getAllInteractions();
+      setInteracciones(all || []);
+    } catch (err) {
+      console.error("Error al obtener interacciones:", err);
+      setInteracciones([]);
+    }
+  };
 
   async function fetchMembers() {
     try {
@@ -109,8 +123,8 @@ export default function Miembros() {
                 setSelectedMember(null);
                 setShowEditModal(true);
               } else if (currentView === "Interacciones") {
-                // acción para nueva interaccion (placeholder)
-                setShowInteraccionModal(true);
+                // acción para nueva interaccion (abre modal global)
+                setShowNewInteractionModal(true);
               } else if (currentView === "Coordinaciones") {
                 // acción para nueva coordinacion (placeholder)
               }
@@ -186,6 +200,13 @@ export default function Miembros() {
           </table>
           <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600">Mostrando {interacciones.length} interacciones</div>
         </div>
+      )}
+
+      {showNewInteractionModal && (
+        <NewInteraccionModal
+          onClose={() => setShowNewInteractionModal(false)}
+          onSaved={() => fetchAllInteracciones()}
+        />
       )}
 
       {currentView === "Coordinaciones" && (

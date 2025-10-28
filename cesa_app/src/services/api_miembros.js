@@ -81,6 +81,23 @@ export async function getInteractions(nc) {
   return interactions[nc] || [];
 }
 
+export async function getAllInteractions() {
+  const interactions = readInteractions();
+  // interactions is an object { nc: [it, ...], ... }
+  const all = [];
+  Object.keys(interactions).forEach((nc) => {
+    const arr = interactions[nc] || [];
+    arr.forEach((it) => all.push({ from: nc, ...it }));
+  });
+  // sort por timestamp descendente
+  all.sort((a, b) => {
+    const ta = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+    const tb = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+    return tb - ta;
+  });
+  return all;
+}
+
 export async function addInteraction(nc, interaction) {
   const interactions = readInteractions();
   if (!interactions[nc]) interactions[nc] = [];
