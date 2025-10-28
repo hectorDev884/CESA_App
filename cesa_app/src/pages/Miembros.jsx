@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SummaryCard from "../components/SummaryCard.jsx";
-import MiembrosModal from "./MiembrosModal.jsx"; // Modal para Agregar/Editar
+import MiembrosModal from "../components/MiembrosModal.jsx"; // Modal para Agregar/Editar
 import InteraccionModal from "../components/InteraccionModal.jsx"; // Asume que existe para la nueva interacción
 
 // --- 🛠️ Funciones Mock de la API (DEBEN SER REEMPLAZADAS POR TU BACKEND REAL) ---
