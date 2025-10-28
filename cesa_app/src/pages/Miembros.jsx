@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import MiembrosModal from "./MiembrosModal.jsx"; // Modal para Agregar/Editar Miembro (Archivo 2)
+import MiembrosModal from "./MiembrosModal.jsx";; // Modal para Agregar/Editar Miembro (Archivo 2)
 
 // --- 🛠️ COMPONENTES AUXILIARES CONSOLIDADOS (para evitar archivos extra) ---
 
