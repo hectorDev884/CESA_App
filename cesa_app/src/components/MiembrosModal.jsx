@@ -9,28 +9,26 @@ import React, { useState, useEffect } from "react";
 export default function MiembrosModal({ onClose, onSave, miembroData }) {
   const isEditing = !!miembroData;
   const initialData = {
-    miembro_id: "", // Solo para edición
+    miembro_id: "", 
     nc: "",
     nombre: "",
     apellido_paterno: "",
     apellido_materno: "",
     correo: "",
-    cargo: "Vocal", // Valor predeterminado
-    rol: "Operativo", // Valor predeterminado
-    coordinacion: "Becas", // Valor predeterminado
+    cargo: "Vocal", 
+    rol: "Operativo", 
+    coordinacion: "Becas", 
   };
 
   const [formData, setFormData] = useState(initialData);
 
   useEffect(() => {
     if (miembroData) {
-      // Si hay datos, es edición: carga los datos existentes
       setFormData((prev) => ({
         ...prev,
         ...miembroData,
       }));
     } else {
-      // Si no hay datos, es agregar: resetear al estado inicial (aunque ya lo hace useState(initialData))
       setFormData(initialData);
     }
   }, [miembroData]);
@@ -43,7 +41,6 @@ export default function MiembrosModal({ onClose, onSave, miembroData }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // --- ⚠️ Validación básica ---
     if (!formData.nc.toString().trim() || !formData.nombre.trim() || !formData.apellido_paterno.trim()) {
       alert("Por favor, completa los campos obligatorios: NC, Nombre y Apellido Paterno.");
       return;
@@ -82,8 +79,6 @@ export default function MiembrosModal({ onClose, onSave, miembroData }) {
                 name="nc"
                 value={formData.nc || ""}
                 onChange={handleChange}
-                // Si es edición, el NC se puede volver de solo lectura si es una clave única inmutable en la BD
-                // readOnly={isEditing} 
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
               />
             </div>
@@ -161,7 +156,6 @@ export default function MiembrosModal({ onClose, onSave, miembroData }) {
                 <option value="Tesorero">Tesorero</option>
                 <option value="Vocal">Vocal</option>
                 <option value="Asesor">Asesor</option>
-                {/* Puedes agregar más cargos según necesidad */}
               </select>
             </div>
 
@@ -178,7 +172,6 @@ export default function MiembrosModal({ onClose, onSave, miembroData }) {
                 <option value="Administrativo">Administrativo</option>
                 <option value="Académico">Académico</option>
                 <option value="Operativo">Operativo</option>
-                {/* Puedes agregar más roles */}
               </select>
             </div>
             
@@ -199,7 +192,6 @@ export default function MiembrosModal({ onClose, onSave, miembroData }) {
               </select>
             </div>
 
-            {/* Este campo se mantiene como ejemplo de un campo opcional/adicional */}
             {isEditing && (
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -217,7 +209,6 @@ export default function MiembrosModal({ onClose, onSave, miembroData }) {
                 </div>
             )}
             
-            {/* Campo adicional para archivo si se necesitara (documento de nombramiento, por ejemplo) */}
              <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Archivo de Nombramiento (opcional)
@@ -237,14 +228,14 @@ export default function MiembrosModal({ onClose, onSave, miembroData }) {
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 hover:cursor-pointer transition-colors font-medium"
+              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
             >
               Cancelar
             </button>
 
             <button
               type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 hover:cursor-pointer transition-colors font-medium"
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
             >
               {isEditing ? "Guardar Cambios" : "Registrar Miembro"}
             </button>
