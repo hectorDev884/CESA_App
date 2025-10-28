@@ -110,7 +110,7 @@ if cors_allowed_env:
     CORS_ALLOWED_ORIGINS = [u.strip() for u in cors_allowed_env.split(",")]
 else:
     # fallback (dev)
-    CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    CORS_ALLOWED_ORIGINS = ["http://localhost:8000", "http://127.0.0.1:8000"]
 
 CORS_ALLOW_CREDENTIALS = True
 
