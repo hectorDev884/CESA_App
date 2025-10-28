@@ -1,5 +1,5 @@
 // src/services/api_miembros.js
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = 'http://localhost:5173/api';
 
 async function apiFetch(url, options = {}) {
   const response = await fetch(`${API_BASE}${url}`, {
@@ -50,6 +50,17 @@ export function deleteMember(nc) {
 }
 
 // --- Interacciones ---
+
+// **FUNCIÓN CORREGIDA (AGREGADA)**
+export function getAllInteractions(opts = {}) {
+  const params = new URLSearchParams();
+  // Lógica de búsqueda si es necesaria para todas las interacciones
+  const query = params.toString() ? `?${params.toString()}` : '';
+  // **Ajustar el endpoint si es diferente en tu API**
+  return apiFetch(`/interacciones/${query}`);
+}
+// ------------------------------
+
 export function getInteractions(nc, opts = {}) {
   const params = new URLSearchParams();
   if (opts.from) params.set('from_date', opts.from);
@@ -96,6 +107,7 @@ export default {
   updateMember,
   deleteMember,
   // Interacciones
+  getAllInteractions, // **AGREGADO AL DEFAULT**
   getInteractions,
   addInteraction,
   updateInteraction,

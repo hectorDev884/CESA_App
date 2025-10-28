@@ -9,7 +9,7 @@ import {
   getMembers,
   deleteMember,
   getInteractions,
-  getAllInteractions,
+  getAllInteractions, // Esta línea ahora funcionará
   deleteInteraction,
 } from "../services/api_miembros.js";
 import NewInteraccionModal from "../components/NewInteraccionModal.jsx";
@@ -58,7 +58,9 @@ export default function Miembros() {
   const handleDeleteInteraction = async (it) => {
     if (!window.confirm("¿Eliminar esta interacción?")) return;
     try {
-      await deleteInteraction(it.from, it.timestamp);
+      // Nota: la API parece usar it.from (nc) e it.timestamp (interactionId)
+      // para identificar la interacción en deleteInteraction
+      await deleteInteraction(it.from, it.timestamp); 
       fetchAllInteracciones();
     } catch (e) {
       console.error(e);
