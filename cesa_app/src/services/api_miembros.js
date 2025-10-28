@@ -1,5 +1,5 @@
 // src/services/api_miembros.js
-const API_BASE = 'http://localhost:5173/api';
+const API_BASE = 'http://localhost:8000/api';
 
 async function apiFetch(url, options = {}) {
   const response = await fetch(`${API_BASE}${url}`, {
