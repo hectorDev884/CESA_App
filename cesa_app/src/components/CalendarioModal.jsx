@@ -1,9 +1,23 @@
 import React, { useState } from "react";
 
+const COLOR_MAP = {
+  red: "Rojo",
+  green: "Verde",
+  blue: "Azul",
+  orange: "Naranja",
+  purple: "Morado",
+  teal: "Verde Azulado",
+  yellow: "Amarillo",
+  pink: "Rosa",
+  gray: "Gris",
+  brown: "Marrón",
+};
+
 export default function CalendarioModal({ onClose, onGenerate }) {
   const [nc, setNc] = useState("");
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [fechaFin, setFechaFin] = useState("");
+  const [fecha_inicio, setFechaInicio] = useState("");
+  const [fecha_fin, setFechaFin] = useState("");
+  const [color, setColor] = useState("red"); // Valor por defecto
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -13,15 +27,16 @@ export default function CalendarioModal({ onClose, onGenerate }) {
       return;
     }
 
-    if (!fechaInicio || !fechaFin) {
+    if (!fecha_inicio || !fecha_fin) {
       alert("Por favor selecciona ambas fechas.");
       return;
     }
 
     onGenerate({
       nc,
-      fechaInicio,
-      fechaFin,
+      fecha_inicio: fecha_inicio,
+      fecha_fin: fecha_fin,
+      color, // <-- Pasamos el color seleccionado
     });
   };
 
@@ -30,7 +45,7 @@ export default function CalendarioModal({ onClose, onGenerate }) {
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative animate-fadeIn border border-gray-200">
         {/* Botón de cerrar */}
         <button
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg transition-colors"
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg transition-colors hover:cursor-pointer"
           onClick={onClose}
         >
           ✖
@@ -64,7 +79,7 @@ export default function CalendarioModal({ onClose, onGenerate }) {
             </label>
             <input
               type="date"
-              value={fechaInicio}
+              value={fecha_inicio}
               onChange={(e) => setFechaInicio(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
             />
@@ -77,10 +92,28 @@ export default function CalendarioModal({ onClose, onGenerate }) {
             </label>
             <input
               type="date"
-              value={fechaFin}
+              value={fecha_fin}
               onChange={(e) => setFechaFin(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
             />
+          </div>
+
+          {/* Selector de color */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Color del encabezado
+            </label>
+            <select
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+            >
+              {Object.entries(COLOR_MAP).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Botones */}
@@ -88,13 +121,13 @@ export default function CalendarioModal({ onClose, onGenerate }) {
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium hover:cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium hover:cursor-pointer"
             >
               Generar
             </button>
