@@ -33,6 +33,13 @@ export default function Miembros() {
     if (currentView === "Interacciones") fetchAllInteracciones();
   }, [search, currentView]);
 
+  // Cargar el conteo/lista de interacciones al montar la página para que
+  // la tarjeta muestre el número correcto incluso antes de hacer click en
+  // "Ver interacciones".
+  useEffect(() => {
+    fetchAllInteracciones();
+  }, []);
+
   const fetchAllInteracciones = async () => {
     try {
       const all = await getAllInteractions();
