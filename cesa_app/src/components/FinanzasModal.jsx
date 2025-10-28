@@ -41,17 +41,24 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
     tipo: "Ingreso",
     monto: "",
     categoria: "",
-    descripcion: "",
+    descripcion: "", // ⬅️ Este campo es solo para UI, no se envía a Supabase
     fecha: "",
   });
 
   useEffect(() => {
-    if (registro) setFormData(registro);
+    if (registro) {
+      // Al editar, buscamos la descripción correspondiente para mostrarla en el modal
+      const currentCat = categoriasFijas[registro.tipo]?.find((c) => c.nombre === registro.categoria);
+      setFormData({
+        ...registro,
+        descripcion: currentCat?.descripcion || "",
+      });
+    }
   }, [registro]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // 🔸 Si cambia el tipo, reiniciamos la categoría y descripción
+    
     if (name === "tipo") {
       setFormData({
         ...formData,
@@ -73,7 +80,13 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    
+    // 💡 SOLUCIÓN: Quitamos la clave 'descripcion' antes de enviar
+    const dataToSend = { ...formData };
+    delete dataToSend.descripcion;
+    
+    // Enviamos el objeto limpio a onSave (en Financieros.jsx)
+    onSave(dataToSend);
   };
 
   const categoriasDisponibles = categoriasFijas[formData.tipo];
@@ -82,14 +95,14 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
     <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative animate-fadeIn">
         <button
-          className="absolute top-3 right-3 text-gray-500 hover:text-red-500 text-xl"
+          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-2xl font-light"
           onClick={onClose}
         >
           ✕
         </button>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center">
-          {modoEdicion ? "Editar Registro Financiero" : "Nuevo Registro Financiero"}
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
+          {modoEdicion ? "✏️ Editar Registro" : "➕ Nuevo Registro"}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -102,7 +115,7 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
               value={formData.concepto}
               onChange={handleChange}
               required
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150"
             />
           </div>
 
@@ -113,7 +126,7 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
               name="tipo"
               value={formData.tipo}
               onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150 bg-white"
             >
               <option value="Ingreso">Ingreso</option>
               <option value="Egreso">Egreso</option>
@@ -128,7 +141,7 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
               value={formData.categoria}
               onChange={handleChange}
               required
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150 bg-white"
             >
               <option value="">Selecciona una categoría</option>
               {categoriasDisponibles.map((c, index) => (
@@ -139,23 +152,25 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
             </select>
           </div>
 
-          {/* Descripción automática */}
+          {/* Descripción automática (Ayuda visual) */}
           {formData.descripcion && (
-            <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm text-gray-700">
-              <strong>Descripción: </strong> {formData.descripcion}
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-sm text-blue-800 shadow-inner">
+              <strong>Info: </strong> {formData.descripcion}
             </div>
           )}
 
           {/* Monto */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Monto</label>
+            <label className="block text-sm font-medium text-gray-700">Monto ($)</label>
             <input
               type="number"
               name="monto"
               value={formData.monto}
               onChange={handleChange}
               required
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+              min="0.01"
+              step="any"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150"
             />
           </div>
 
@@ -168,22 +183,22 @@ export default function FinanzasModal({ onClose, onSave, registro, modoEdicion }
               value={formData.fecha}
               onChange={handleChange}
               required
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150"
             />
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end gap-3 mt-6">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100"
+              className="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition duration-150"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+              className="px-5 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition duration-150 shadow-md"
             >
               {modoEdicion ? "Guardar Cambios" : "Agregar Registro"}
             </button>
