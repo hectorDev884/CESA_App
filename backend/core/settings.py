@@ -28,10 +28,12 @@ INSTALLED_APPS = [
 
     # My app
     'api',
+    'oficios'
 ]
 
 # --- Middleware (CorsMiddleware arriba de CommonMiddleware) ---
 MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -113,6 +115,11 @@ else:
     CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # configuracion de Django REST Framework
 REST_FRAMEWORK = {

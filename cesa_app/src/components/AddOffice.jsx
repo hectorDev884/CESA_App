@@ -1,194 +1,239 @@
 import React, { useState, useEffect } from "react";
 
 export default function AddOffice() {
-  const [tramites, setTramites] = useState([]);
   const [tipo, setTipo] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [estatus, setEstatus] = useState("Pendiente");
-  const [documento, setDocumento] = useState(null);
+  const [asunto, setAsunto] = useState("");
+  const [destinatario, setDestinatario] = useState("");
+  const [cuerpoTexto, setCuerpoTexto] = useState("");
+
+  const [tramites, setTramites] = useState([]);
+
+  const [loading, setLoading] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
 
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("sa_tramites_v1")) || [];
-    setTramites(stored);
-  }, []);
+  const generarOficio = async () => {
+    if (!tipo || !asunto || !destinatario || !cuerpoTexto) {
+      alert(
+        "Por favor, complete todos los campos requeridos para generar el oficio."
+      );
+      return;
+    }
 
-  const saveToLocal = (data) => {
-    localStorage.setItem("sa_tramites_v1", JSON.stringify(data));
-  };
+    setLoading(true);
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setDocumento(reader.result);
-      reader.readAsDataURL(file);
+    let prefijoTipo = "";
+    switch (tipo) {
+      case "Justificante":
+        prefijoTipo = "J";
+        break;
+      case "Oficio":
+        prefijoTipo = "O";
+        break;
+      case "Solicitud":
+        prefijoTipo = "S";
+        break;
+      case "Invitación":
+        prefijoTipo = "I";
+        break;
+      default:
+        prefijoTipo = "X";
+    }
+
+    const dataToSend = {
+      tipo_oficio: prefijoTipo,
+      asunto: asunto,
+      destinatario: destinatario,
+      cuerpo_texto: cuerpoTexto,
+    };
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/oficios/generar/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          // credentials: "include",
+          body: JSON.stringify(dataToSend),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(`Oficio ${result.numero_oficio} generado con éxito.`);
+
+        if (result.url_descarga) {
+          window.open(result.url_descarga, "_blank");
+        }
+
+        setTipo("");
+        setAsunto("");
+        setDestinatario("");
+        setCuerpoTexto("");
+      } else {
+        console.error("Error en el servidor: ", result);
+        alert(
+          `Error al generar el oficio: ${
+            result.error || JSON.stringify(result)
+          }`
+        );
+      }
+    } catch (error) {
+      console.error("Falló la conexión con el servidor: ", error);
+      alert(
+        "Falló la conexión con el servidor de Django. Asegúrate de que esté corriendo exitosamente."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  const addTramite = () => {
-    if (!tipo || !descripcion) return;
-    const newTramites = [
-      ...tramites,
-      {
-        tipo,
-        descripcion,
-        estatus,
-        documento,
-        fecha: new Date().toLocaleString(),
-      },
-    ];
-    setTramites(newTramites);
-    saveToLocal(newTramites);
-    setTipo("");
-    setDescripcion("");
-    setEstatus("Pendiente");
-    setDocumento(null);
+  const editTramite = (index) => {
+    alert(
+      "La edición de registros en la tabla debe implementarse con la API de Django."
+    );
   };
 
   const deleteTramite = (index) => {
-    const newTramites = tramites.filter((_, i) => i !== index);
-    setTramites(newTramites);
-    saveToLocal(newTramites);
-  };
-
-  const editTramite = (index) => {
-    const t = tramites[index];
-    setTipo(t.tipo);
-    setDescripcion(t.descripcion);
-    setEstatus(t.estatus);
-    setDocumento(t.documento);
-    setEditIndex(index);
+    alert(
+      "La eliminación de registros debe implementarse con la API de Django."
+    );
   };
 
   const updateTramite = () => {
-    const updated = [...tramites];
-    updated[editIndex] = {
-      tipo,
-      descripcion,
-      estatus,
-      documento,
-      fecha: new Date().toLocaleString(),
-    };
-    setTramites(updated);
-    saveToLocal(updated);
-    setEditIndex(null);
-    setTipo("");
-    setDescripcion("");
-    setEstatus("Pendiente");
-    setDocumento(null);
+    alert(
+      "La actualización de registros debe implementarse con la API de Django."
+    );
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">Gestión de Trámites</h2>
+    <div className="max-w-4xl mx-auto bg-white p-6 mt-10 rounded-lg shadow-xl">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+        Generación de Oficios C.E.S.A.
+      </h2>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <select
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="">Seleccionar tipo</option>
-          <option>Justificante</option>
-          <option>Oficio</option>
-          <option>Solicitud</option>
-          <option>Petición</option>
-          <option>Invitación</option>
-        </select>
+      {/* Sección de Formulario */}
+      <div className="space-y-4 mb-8 p-4 border rounded-lg bg-gray-50">
+        <h3 className="text-xl font-semibold mb-3 text-gray-700">
+          Generar Nuevo Oficio (Generación de PDF)
+        </h3>
 
-        <select
-          value={estatus}
-          onChange={(e) => setEstatus(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option>Pendiente</option>
-          <option>En revisión</option>
-          <option>Aprobado</option>
-          <option>Rechazado</option>
-        </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Tipo de Trámite (Selección del prefijo) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Tipo de Oficio
+            </label>
+            <select
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Seleccionar tipo</option>
+              {/* Los values que se envían son las iniciales (prefijos) */}
+              <option>Justificante</option>
+              <option>Oficio</option>
+              <option>Solicitud</option>
+              <option>Petición</option>
+              <option>Invitación</option>
+            </select>
+          </div>
 
-        <input
-          type="text"
-          placeholder="Descripción"
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-          className="border p-2 rounded col-span-2"
-        />
+          {/* Destinatario */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Destinatario (Nombre o Cargo)
+            </label>
+            <input
+              type="text"
+              placeholder="Ej: C. JAIRO GIOVANNI ALVAREZ JUAREZ"
+              value={destinatario}
+              onChange={(e) => setDestinatario(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+        </div>
 
-        <input
-          type="file"
-          onChange={handleFileUpload}
-          className="border p-2 rounded col-span-2"
-        />
+        {/* Descripción */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Asunto del Oficio
+          </label>
+          <input
+            type="text"
+            placeholder="asunto breve que aparecerá en el oficio"
+            value={asunto}
+            onChange={(e) => setAsunto(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
 
-        {editIndex !== null ? (
+        {/* Cuerpo del Oficio (Contenido principal) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Cuerpo del Oficio (Texto principal)
+          </label>
+          <textarea
+            placeholder="Escribe aquí el contenido principal del oficio. Los saltos de línea se respetarán como párrafos."
+            value={cuerpoTexto}
+            onChange={(e) => setCuerpoTexto(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"
+            required
+          />
+        </div>
+
+        {/* Los campos originales de Estatus y Carga de Documento se han removido */}
+
+        {/* Botones de Acción */}
+        <div className="flex justify-end gap-3 pt-4">
+          {/* El botón de Cancelar/Actualizar se simplifica/elimina si solo estamos generando */}
+          {editIndex !== null && (
+            <button
+              onClick={() => {
+                setEditIndex(null);
+                setTipo("");
+                setAsunto("");
+                setDestinatario("");
+                setCuerpoTexto("");
+              }}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150"
+            >
+              Cancelar Edición
+            </button>
+          )}
+
           <button
-            onClick={updateTramite}
-            className="bg-green-600 text-white px-4 py-2 rounded col-span-2"
+            onClick={generarOficio}
+            className={`px-4 py-2 text-white rounded-lg transition duration-150 ${
+              loading
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+            disabled={loading}
           >
-            Actualizar
+            {loading ? "Generando Oficio..." : "Generar Oficio en .PDF"}
           </button>
-        ) : (
-          <button
-            onClick={addTramite}
-            className="bg-blue-600 text-white px-4 py-2 rounded col-span-2"
-          >
-            Agregar
-          </button>
-        )}
+        </div>
       </div>
 
-      <table className="w-full border">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="p-2 border">Tipo</th>
-            <th className="p-2 border">Descripción</th>
-            <th className="p-2 border">Estatus</th>
-            <th className="p-2 border">Documento</th>
-            <th className="p-2 border">Fecha</th>
-            <th className="p-2 border">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tramites.map((t, i) => (
-            <tr key={i}>
-              <td className="p-2 border">{t.tipo}</td>
-              <td className="p-2 border">{t.descripcion}</td>
-              <td className="p-2 border">{t.estatus}</td>
-              <td className="p-2 border">
-                {t.documento ? (
-                  <a
-                    href={t.documento}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline"
-                  >
-                    Ver documento
-                  </a>
-                ) : (
-                  "Sin archivo"
-                )}
-              </td>
-              <td className="p-2 border">{t.fecha}</td>
-              <td className="p-2 border flex gap-2 justify-center">
-                <button
-                  onClick={() => editTramite(i)}
-                  className="bg-yellow-500 text-white px-3 rounded"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => deleteTramite(i)}
-                  className="bg-red-600 text-white px-3 rounded"
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Sección de Lista de Trámites (Se mantiene la estructura de la tabla) */}
+      <h3 className="text-xl font-bold mb-4 text-gray-800">
+        Trámites Registrados (Lista Local - {tramites.length})
+      </h3>
+      {/* El contenido de la tabla DEBE actualizarse para reflejar los datos del backend */}
+      <div className="overflow-x-auto">
+        {/* Aquí iría la tabla, idealmente cargando datos de un endpoint GET de Django */}
+        <p className="text-center text-gray-500 p-4 border rounded-lg bg-gray-50">
+          *Esta tabla requiere una nueva función `fetchTramites` para cargar los
+          oficios desde su API de Django.*
+        </p>
+        {/* ... código de la tabla original (simplificado) ... */}
+      </div>
     </div>
   );
 }
