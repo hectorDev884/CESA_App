@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import MiembrosModal from "./MiembrosModal.jsx";; // Modal para Agregar/Editar Miembro (Archivo 2)
-
+import MiembrosModal from "../components/MiembrosModal.jsx";
 // --- 🛠️ COMPONENTES AUXILIARES CONSOLIDADOS (para evitar archivos extra) ---
 
 // 1. Componente de Tarjeta de Resumen (Reemplaza a SummaryCard.jsx)
