@@ -1,129 +1,106 @@
-// Servicio simple que usa localStorage para simular un backend de miembros e interacciones
-const MEMBERS_KEY = "cesa_members_v1";
-const INTERACTIONS_KEY = "cesa_interactions_v1";
+// src/services/api_miembros.js
+const API_BASE = 'http://localhost:8000/api';
 
-function readMembers() {
-  try {
-    const raw = localStorage.getItem(MEMBERS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    console.error(e);
-    return [];
+async function apiFetch(url, options = {}) {
+  const response = await fetch(`${API_BASE}${url}`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Error ${response.status}: ${errText}`);
   }
+
+  return response.json();
 }
 
-function writeMembers(list) {
-  localStorage.setItem(MEMBERS_KEY, JSON.stringify(list));
+// --- Miembros ---
+export function getMembers(opts = {}) {
+  const params = new URLSearchParams();
+  if (opts.q) params.set('search', opts.q);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  return apiFetch(`/miembros/${query}`);
 }
 
-function readInteractions() {
-  try {
-    const raw = localStorage.getItem(INTERACTIONS_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch (e) {
-    console.error(e);
-    return {};
-  }
+export function getMember(nc) {
+  return apiFetch(`/miembros/${nc}/`);
 }
 
-function writeInteractions(obj) {
-  localStorage.setItem(INTERACTIONS_KEY, JSON.stringify(obj));
+export function createMember(data) {
+  return apiFetch('/miembros/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
-export async function getMembers(opts) {
-  // opts.q puede ser una cadena de búsqueda
-  const all = readMembers();
-  if (!opts || !opts.q) return all;
-  const q = opts.q.toLowerCase();
-  return all.filter(
-    (m) =>
-      (m.numero_control && m.numero_control.toLowerCase().includes(q)) ||
-      (m.nombre && m.nombre.toLowerCase().includes(q)) ||
-      (m.correo && m.correo.toLowerCase().includes(q)) ||
-      (m.rol && m.rol.toLowerCase().includes(q)) ||
-      (m.coordinacion && m.coordinacion.toLowerCase().includes(q))
-  );
+export function updateMember(nc, data) {
+  return apiFetch(`/miembros/${nc}/`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 }
 
-export async function createMember(member) {
-  const all = readMembers();
-  // validar NC único
-  if (all.some((m) => m.numero_control === member.numero_control)) {
-    throw new Error("Número de control ya registrado");
-  }
-  all.push(member);
-  writeMembers(all);
-  return member;
+export function deleteMember(nc) {
+  return apiFetch(`/miembros/${nc}/`, {
+    method: 'DELETE',
+  });
 }
 
-export async function updateMember(nc, newData) {
-  const all = readMembers();
-  const idx = all.findIndex((m) => m.numero_control === nc);
-  if (idx === -1) throw new Error("Miembro no encontrado");
-  all[idx] = { ...all[idx], ...newData };
-  writeMembers(all);
-  return all[idx];
+// --- Interacciones ---
+export function getInteractions(nc, opts = {}) {
+  const params = new URLSearchParams();
+  if (opts.from) params.set('from_date', opts.from);
+  if (opts.to) params.set('to_date', opts.to);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  return apiFetch(`/miembros/${nc}/interacciones/${query}`);
 }
 
-export async function deleteMember(nc) {
-  const all = readMembers();
-  const filtered = all.filter((m) => m.numero_control !== nc);
-  writeMembers(filtered);
-  // eliminar interacciones asociadas
-  const interactions = readInteractions();
-  delete interactions[nc];
-  writeInteractions(interactions);
-  return true;
+export function addInteraction(nc, data) {
+  return apiFetch(`/miembros/${nc}/interacciones/`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
-export async function getInteractions(nc) {
-  const interactions = readInteractions();
-  return interactions[nc] || [];
+export function updateInteraction(nc, interactionId, data) {
+  return apiFetch(`/miembros/${nc}/interacciones/${interactionId}/`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 }
 
-export async function addInteraction(nc, interaction) {
-  const interactions = readInteractions();
-  if (!interactions[nc]) interactions[nc] = [];
-  interactions[nc].push({ ...interaction, timestamp: new Date().toISOString() });
-  writeInteractions(interactions);
-  return interactions[nc];
+export function deleteInteraction(nc, interactionId) {
+  return apiFetch(`/miembros/${nc}/interacciones/${interactionId}/`, {
+    method: 'DELETE',
+  });
 }
 
-// utilidad para inicializar con datos de ejemplo (solo para desarrollo)
+// --- Coordinaciones (utils) ---
+export function getCoordinaciones() {
+  return apiFetch('/coordinaciones/');
+}
+
+// --- Para desarrollo/testing ---
 export function seedSampleData() {
-  const existing = readMembers();
-  if (existing.length) return;
-  const sample = [
-    {
-      numero_control: "NC001",
-      nombre: "Luis",
-      apellido_paterno: "García",
-      apellido_materno: "Pérez",
-      correo: "luis@example.com",
-      rol: "Miembro",
-      cargo: "Analista",
-      coordinacion: "Finanzas",
-    },
-    {
-      numero_control: "NC002",
-      nombre: "Ana",
-      apellido_paterno: "López",
-      apellido_materno: "Ruiz",
-      correo: "ana@example.com",
-      rol: "Coordinador",
-      cargo: "Coordinador",
-      coordinacion: "Operaciones",
-    },
-  ];
-  writeMembers(sample);
+  console.warn('seedSampleData() solo disponible en versión de desarrollo con localStorage');
 }
 
 export default {
+  // Miembros
   getMembers,
+  getMember,
   createMember,
   updateMember,
   deleteMember,
+  // Interacciones
   getInteractions,
   addInteraction,
+  updateInteraction,
+  deleteInteraction,
+  // Utils
+  getCoordinaciones,
   seedSampleData,
 };
