@@ -1,29 +1,58 @@
 import React, { useEffect, useState } from "react";
-import { getMembers, addInteraction } from "../services/api_miembros.js";
+import { getMembers, addInteraction, updateInteraction } from "../services/api_miembros.js";
 
-export default function NewInteraccionModal({ onClose, onSaved }) {
+export default function NewInteraccionModal({ onClose, onSaved, initial }) {
   const [members, setMembers] = useState([]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [message, setMessage] = useState("");
   const [tipo, setTipo] = useState("Mensaje");
+  const [asunto, setAsunto] = useState("");
+  const [fecha, setFecha] = useState("");
+  const editing = Boolean(initial && initial.timestamp);
 
   useEffect(() => {
     async function load() {
       const all = await getMembers();
       setMembers(all);
       if (all.length) {
-        setFrom(all[0].numero_control);
-        setTo(all.length > 1 ? all[1].numero_control : all[0].numero_control);
+        setFrom(initial?.from || all[0].numero_control);
+        setTo(initial?.to || (all.length > 1 ? all[1].numero_control : all[0].numero_control));
+        setTipo(initial?.tipo || "Mensaje");
+        setMessage(initial?.message || "");
+        setAsunto(initial?.asunto || "");
+        setFecha(initial?.timestamp ? formatForInput(initial.timestamp) : "");
       }
     }
     load();
-  }, []);
+  }, [initial]);
+
+  function formatForInput(ts) {
+    try {
+      const d = new Date(ts);
+      // to yyyy-MM-ddTHH:mm
+      const pad = (n) => String(n).padStart(2, "0");
+      const y = d.getFullYear();
+      const m = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      const hh = pad(d.getHours());
+      const mm = pad(d.getMinutes());
+      return `${y}-${m}-${day}T${hh}:${mm}`;
+    } catch (e) {
+      return "";
+    }
+  }
 
   const handleSave = async () => {
     if (!from || !to || !message) return;
-    const newIt = { from, to, message, tipo, timestamp: new Date().toISOString() };
-    await addInteraction(from, newIt);
+    const ts = fecha ? new Date(fecha).toISOString() : new Date().toISOString();
+    const newIt = { from, to, message, asunto, tipo, timestamp: ts };
+    if (editing && initial) {
+      // update existing interaction stored under initial.from
+      await updateInteraction(initial.from, initial.timestamp, newIt);
+    } else {
+      await addInteraction(from, newIt);
+    }
     if (onSaved) onSaved();
     onClose();
   };
@@ -67,7 +96,12 @@ export default function NewInteraccionModal({ onClose, onSaved }) {
 
           <div>
             <label className="text-sm">Asunto</label>
-            <input value={""} readOnly className="w-full px-3 py-2 border rounded mt-1 bg-gray-100" placeholder="(opcional)" />
+            <input value={asunto} onChange={(e) => setAsunto(e.target.value)} className="w-full px-3 py-2 border rounded mt-1" placeholder="(opcional)" />
+          </div>
+
+          <div>
+            <label className="text-sm">Fecha y hora</label>
+            <input type="datetime-local" value={fecha} onChange={(e) => setFecha(e.target.value)} className="w-full px-3 py-2 border rounded mt-1" />
           </div>
 
           <div className="md:col-span-2">

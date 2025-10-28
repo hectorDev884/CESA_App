@@ -10,6 +10,7 @@ import {
   deleteMember,
   getInteractions,
   getAllInteractions,
+  deleteInteraction,
 } from "../services/api_miembros.js";
 import NewInteraccionModal from "../components/NewInteraccionModal.jsx";
 
@@ -23,6 +24,7 @@ export default function Miembros() {
   const [members, setMembers] = useState([]);
   const [interacciones, setInteracciones] = useState([]);
   const [showNewInteractionModal, setShowNewInteractionModal] = useState(false);
+  const [editingInteraction, setEditingInteraction] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,6 +40,32 @@ export default function Miembros() {
     } catch (err) {
       console.error("Error al obtener interacciones:", err);
       setInteracciones([]);
+    }
+  };
+
+  const handleEditInteraction = (it) => {
+    setEditingInteraction(it);
+    setShowNewInteractionModal(true);
+  };
+
+  const handleDeleteInteraction = async (it) => {
+    if (!window.confirm("¿Eliminar esta interacción?")) return;
+    try {
+      await deleteInteraction(it.from, it.timestamp);
+      fetchAllInteracciones();
+    } catch (e) {
+      console.error(e);
+      alert("Error al eliminar interacción");
+    }
+  };
+
+  const formatDate = (ts) => {
+    if (!ts) return "--";
+    try {
+      const d = new Date(ts);
+      return d.toLocaleString();
+    } catch (e) {
+      return ts;
     }
   };
 
@@ -83,12 +111,9 @@ export default function Miembros() {
     }
     // Por ahora las interacciones y coordinaciones son tablas estáticas/placeholder
     if (view === "Interacciones") {
-      // limpiar selección de miembro
+      // limpiar selección de miembro y recargar interacciones
       setSelectedMember(null);
-      setInteracciones([]);
-    }
-    if (view === "Coordinaciones") {
-      setSelectedMember(null);
+      fetchAllInteracciones();
     }
   };
 
@@ -125,15 +150,13 @@ export default function Miembros() {
               } else if (currentView === "Interacciones") {
                 // acción para nueva interaccion (abre modal global)
                 setShowNewInteractionModal(true);
-              } else if (currentView === "Coordinaciones") {
-                // acción para nueva coordinacion (placeholder)
               }
             }}
             className="bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 ml-4 hover:cursor-pointer"
           >
             {currentView === "Miembros" && "+ Agregar Miembro"}
             {currentView === "Interacciones" && "Nueva interaccion"}
-            {currentView === "Coordinaciones" && "Nueva coordinación"}
+            {/* Coordinaciones ya no es una vista separada */}
           </button>
         </div>
       </div>
@@ -153,13 +176,7 @@ export default function Miembros() {
           buttonText="Ver interacciones"
           onButtonClick={() => showView("Interacciones")}
         />
-        <SummaryCard
-          title="Coordinaciones"
-          mainText="--"
-          subText="Activas"
-          buttonText="Ver coordinaciones"
-          onButtonClick={() => showView("Coordinaciones")}
-        />
+        {/* Coordinaciones eliminado por petición: ahora se maneja como select en el modal de miembro */}
       </div>
 
       {/* Contenido principal dinámico según la vista seleccionada */}
@@ -172,27 +189,35 @@ export default function Miembros() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">ID</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">#</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Fecha</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Desde</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Para</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tipo</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Descripción</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Mensaje</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {/* Placeholder — por ahora sin datos específicos */}
               {interacciones.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-sm text-gray-500">
+                  <td colSpan={7} className="px-4 py-6 text-center text-sm text-gray-500">
                     No hay interacciones registradas.
                   </td>
                 </tr>
               ) : (
                 interacciones.map((it, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">{it.id || idx + 1}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{it.fecha || "--"}</td>
+                  <tr key={it.timestamp || idx} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm text-gray-900">{idx + 1}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{formatDate(it.timestamp)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{it.from}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{it.to}</td>
                     <td className="px-4 py-3 text-sm text-gray-700">{it.tipo || "--"}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{it.descripcion || "--"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{it.message || "--"}</td>
+                    <td className="px-4 py-3 flex justify-center gap-3">
+                      <button className="text-blue-600 hover:text-blue-800 cursor-pointer" onClick={() => handleEditInteraction(it)}>✏️</button>
+                      <button className="text-red-600 hover:text-red-800 cursor-pointer" onClick={() => handleDeleteInteraction(it)}>❌</button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -204,33 +229,13 @@ export default function Miembros() {
 
       {showNewInteractionModal && (
         <NewInteraccionModal
-          onClose={() => setShowNewInteractionModal(false)}
+          onClose={() => { setShowNewInteractionModal(false); setEditingInteraction(null); }}
           onSaved={() => fetchAllInteracciones()}
+          initial={editingInteraction}
         />
       )}
 
-      {currentView === "Coordinaciones" && (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">ID</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Nombre</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Responsable</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-sm text-gray-500">
-                  No hay coordinaciones registradas.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600">Mostrando 0 coordinaciones</div>
-        </div>
-      )}
+      {/* Coordinaciones eliminado — ahora se elige en el modal de miembro */}
 
       {showEditModal && (
         <EditarMiembroModal
