@@ -1,4 +1,3 @@
-// src/components/EditarMiembroModal.jsx
 import React, { useState, useEffect } from "react";
 import { createMember, updateMember } from "../services/api_miembros.js";
 
@@ -74,32 +73,14 @@ export default function EditarMiembroModal({ onClose, memberData }) {
           </div>
           <div>
             <label className="text-sm font-medium">Coordinación</label>
-            <select name="coordinacion" value={form.coordinacion} onChange={handleChange} className="w-full px-3 py-2 border rounded">
-              <option value="">-- Seleccionar --</option>
-              <option>Mesa directiva central</option>
-              <option>Coordinación Eventos Sociales</option>
-              <option>Coordinación Gestión Empresarial</option>
-              <option>Coordinación Inclusión y Bienestar</option>
-              <option>Coordinación Industrial</option>
-              <option>Coordinación Informática</option>
-              <option>Coordinación Innovación y Gestión Académica</option>
-              <option>Coordinación Lenguas e Intercambios</option>
-              <option>Coordinación Mecánica</option>
-              <option>Coordinación Relaciones Públicas</option>
-              <option>Coordinación Sistemas Computacionales</option>
-              <option>Coordinación Sustentabilidad y Medio Ambiente</option>
-              <option>Coordinación Vinculación y Representación</option>
-            </select>
+            <input name="coordinacion" value={form.coordinacion} onChange={handleChange} className="w-full px-3 py-2 border rounded" />
           </div>
 
           {error && <div className="text-red-600 col-span-2">{error}</div>}
 
           <div className="col-span-2 flex justify-end gap-2 mt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 border rounded">Cancelar</button>
-            <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">
-              {/* 💥 MODIFICACIÓN: Texto del botón según la acción */}
-              {memberData ? "Modificar" : "Guardar"}
-            </button>
+            <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">Guardar</button>
           </div>
         </form>
       </div>

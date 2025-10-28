@@ -1,7 +1,7 @@
 // src/components/MiembrosModal.jsx
 import React from "react";
 
-export default function MiembrosModal({ members, handleEdit, handleDelete }) {
+export default function MiembrosModal({ members, handleEdit, handleDelete, openInteracciones }) {
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
       <table className="min-w-full divide-y divide-gray-200">
@@ -28,18 +28,14 @@ export default function MiembrosModal({ members, handleEdit, handleDelete }) {
               <td className="px-4 py-3 text-sm text-gray-700">{m.cargo}</td>
               <td className="px-4 py-3 text-sm text-gray-700">{m.coordinacion}</td>
               <td className="px-4 py-3 flex justify-center gap-3">
-                <button
-                  className="text-blue-600 hover:text-blue-800 cursor-pointer hover:cursor-pointer"
-                  onClick={() => handleEdit(m)}
-                >
-                  ✏️ {/* Editar/Ver Detalles (abre el modal de edición) */}
+                <button className="text-blue-600 hover:text-blue-800" onClick={() => handleEdit(m)}>
+                  ✏️
                 </button>
-                {/* Se eliminó el globo de texto - ya no se muestra */}
-                <button
-                  className="text-red-600 hover:text-red-800 cursor-pointer hover:cursor-pointer"
-                  onClick={() => handleDelete(m.numero_control)}
-                >
-                  ❌ {/* Eliminar (llama a la función con confirmación) */}
+                <button className="text-green-600 hover:text-green-800" onClick={() => openInteracciones(m)}>
+                  💬
+                </button>
+                <button className="text-red-600 hover:text-red-800" onClick={() => handleDelete(m.numero_control)}>
+                  ❌
                 </button>
               </td>
             </tr>

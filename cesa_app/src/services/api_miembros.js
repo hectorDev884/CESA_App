@@ -81,51 +81,12 @@ export async function getInteractions(nc) {
   return interactions[nc] || [];
 }
 
-export async function getAllInteractions() {
-  const interactions = readInteractions();
-  // interactions is an object { nc: [it, ...], ... }
-  const all = [];
-  Object.keys(interactions).forEach((nc) => {
-    const arr = interactions[nc] || [];
-    arr.forEach((it) => all.push({ from: nc, ...it }));
-  });
-  // sort por timestamp descendente
-  all.sort((a, b) => {
-    const ta = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-    const tb = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-    return tb - ta;
-  });
-  return all;
-}
-
 export async function addInteraction(nc, interaction) {
   const interactions = readInteractions();
   if (!interactions[nc]) interactions[nc] = [];
-  // if interaction already has timestamp, preserve; else generate one
-  const it = { ...interaction, timestamp: interaction.timestamp || new Date().toISOString() };
-  interactions[nc].push(it);
+  interactions[nc].push({ ...interaction, timestamp: new Date().toISOString() });
   writeInteractions(interactions);
   return interactions[nc];
-}
-
-export async function updateInteraction(nc, timestamp, newInteraction) {
-  const interactions = readInteractions();
-  if (!interactions[nc]) throw new Error("No hay interacciones para este miembro");
-  const idx = interactions[nc].findIndex((it) => it.timestamp === timestamp);
-  if (idx === -1) throw new Error("Interacción no encontrada");
-  // preserve timestamp unless newInteraction has one
-  interactions[nc][idx] = { ...interactions[nc][idx], ...newInteraction, timestamp: newInteraction.timestamp || interactions[nc][idx].timestamp };
-  writeInteractions(interactions);
-  return interactions[nc][idx];
-}
-
-export async function deleteInteraction(nc, timestamp) {
-  const interactions = readInteractions();
-  if (!interactions[nc]) return false;
-  const filtered = interactions[nc].filter((it) => it.timestamp !== timestamp);
-  interactions[nc] = filtered;
-  writeInteractions(interactions);
-  return true;
 }
 
 // utilidad para inicializar con datos de ejemplo (solo para desarrollo)
