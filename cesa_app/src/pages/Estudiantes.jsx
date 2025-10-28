@@ -11,45 +11,76 @@ import {
 export default function Estudiantes() {
   const navigate = useNavigate();
 
-  // --- Estados para búsqueda y listado ---
+  // --- Estados ---
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
-  const [allStudents, setAllStudents] = useState([]); // Lista completa
-  const [displayedStudents, setDisplayedStudents] = useState([]); // Lista filtrada
+  // ❌ allStudents ahora se convierte en la lista de la página actual (results)
+  const [estudiantes, setEstudiantes] = useState([]); 
+  const [loading, setLoading] = useState(false); // <--- loader
+  
+  // ✅ ESTADOS DE PAGINACIÓN
+  const [currentPage, setCurrentPage] = useState(1);
+  const [count, setCount] = useState(0); // Total de registros
+  const [pageSize] = useState(10); // Tamaño de página (debe coincidir con DRF)
+  const totalPages = Math.ceil(count / pageSize);
 
-  // --- Estados para modal ---
+  // Modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-  // --- 🔄 Cargar estudiantes ---
+  // --- Cargar estudiantes (activado por search o currentPage) ---
   useEffect(() => {
     fetchEstudiantes();
-  }, [search]);
+  }, [search, currentPage]); // ✅ Dependencias actualizadas
 
   async function fetchEstudiantes() {
+    setLoading(true); // <--- inicio carga
     try {
-      const query = search ? `search=${encodeURIComponent(search)}` : "";
-      const data = await getEstudiantes(query);
-      setAllStudents(data);
+      // 1. Construir la cadena de consulta (query string)
+      const params = new URLSearchParams();
+      // Si hay búsqueda, añadir el parámetro 'search'
+      if (search) {
+          params.append('search', search);
+      }
+      // Siempre añadir el parámetro de página
+      params.append('page', currentPage);
+
+      const query = params.toString(); // "page=1&search=juan"
+
+      // 2. Llamar a la API
+      const response = await getEstudiantes(query); 
+      
+      // 3. Manejar la respuesta de paginación de DRF
+      setEstudiantes(response.results); // La lista de estudiantes de la página actual
+      setCount(response.count); // El total de resultados filtrados
+      
     } catch (err) {
       console.error("❌ Error al obtener estudiantes:", err);
+    } finally {
+      setLoading(false); // <--- fin carga
     }
   }
 
-  // --- ✏️ Abrir modal de edición ---
+  // --- Manejo de la Paginación ---
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  // --- Abrir modal ---
   const handleEdit = (student) => {
     setSelectedStudent({ ...student });
     setShowEditModal(true);
   };
 
-  // --- 💾 Guardar cambios ---
+  // --- Guardar edición ---
   const handleSaveEdit = async (formData) => {
     try {
       const updated = await updateEstudiante(selectedStudent.numero_control, formData);
-      setAllStudents((prev) =>
-        prev.map((s) =>
-          s.numero_control === selectedStudent.numero_control ? updated : s
-        )
+      // Solo actualizamos el estudiante en la página actual
+      setEstudiantes((prev) =>
+        prev.map((s) => (s.numero_control === selectedStudent.numero_control ? updated : s))
       );
       setShowEditModal(false);
       setSelectedStudent(null);
@@ -58,34 +89,40 @@ export default function Estudiantes() {
     }
   };
 
-  // --- 🗑️ Eliminar estudiante ---
+  // --- Eliminar ---
   const handleDelete = async (numero_control) => {
     if (!window.confirm("¿Seguro que deseas eliminar a este estudiante?")) return;
     try {
       await deleteEstudiante(numero_control);
-      setAllStudents((prev) =>
-        prev.filter((s) => s.numero_control !== numero_control)
-      );
+      // Filtramos el estudiante de la lista actual y recargamos la página
+      setEstudiantes((prev) => prev.filter((s) => s.numero_control !== numero_control));
+      // Importante: forzar la recarga para rellenar el hueco o ajustar la paginación
+      fetchEstudiantes(); 
     } catch (err) {
       console.error("❌ Error al eliminar estudiante:", err);
     }
   };
 
-  // --- 🔍 Búsqueda ---
+  // --- Buscar ---
   const handleSearch = () => {
+    // Al buscar, reiniciamos a la página 1 y cambiamos el término de búsqueda
+    setCurrentPage(1); 
     setSearch(searchInput);
   };
 
-  // --- ✨ Filtrar estudiantes según búsqueda ---
-  useEffect(() => {
-    setDisplayedStudents(
-      allStudents.filter(
-        (s) =>
-          `${s.nombre} ${s.apellido}`.toLowerCase().includes(search.toLowerCase()) ||
-          s.numero_control.toString().includes(search)
-      )
+  // ❌ Se elimina el useEffect anterior para filtrar estudiantes en el cliente
+
+  // --- Render ---
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-700 text-lg">Cargando estudiantes...</p>
+        </div>
+      </div>
     );
-  }, [allStudents, search]);
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -122,11 +159,12 @@ export default function Estudiantes() {
 
       {/* Cards resumen */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <SummaryCard title="Total Estudiantes" mainText={allStudents.length} subText="Estudiantes totales registrados" />
+        {/* ✅ Usamos 'count' para el total de estudiantes (ya filtrados) */}
+        <SummaryCard title="Total Estudiantes" mainText={count} subText="Estudiantes totales registrados (filtrados)" />
         <SummaryCard
-          title="Nuevos Ingresos"
-          mainText={allStudents.filter(e => new Date(e.fecha_registro).getMonth() === new Date().getMonth()).length}
-          subText={`Registrados en ${new Date().toLocaleString("es-MX", { month: "long" })}`} />
+          title="Página Actual"
+          mainText={`${currentPage} de ${totalPages}`}
+          subText={`Mostrando ${estudiantes.length} resultados`} />
       </div>
 
       {/* Tabla */}
@@ -144,7 +182,8 @@ export default function Estudiantes() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {displayedStudents.map((student) => (
+            {/* ✅ Iteramos sobre 'estudiantes' (los de la página actual) */}
+            {estudiantes.map((student) => ( 
               <tr key={student.numero_control} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm text-gray-900">{student.nombre} {student.apellido}</td>
                 <td className="px-4 py-3 text-sm text-[#036942] font-medium">{student.numero_control}</td>
@@ -153,25 +192,35 @@ export default function Estudiantes() {
                 <td className="px-4 py-3 text-sm text-gray-700">{student.telefono}</td>
                 <td className="px-4 py-3 text-sm text-gray-700">{student.fecha_registro?.split("T")[0] || "-"}</td>
                 <td className="px-4 py-3 flex justify-center gap-3">
-                  <button
-                    onClick={() => handleEdit(student)}
-                    className="text-blue-600 hover:text-blue-800 hover:cursor-pointer"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() => handleDelete(student.numero_control)}
-                    className="text-red-600 hover:text-red-800 hover:cursor-pointer"
-                  >
-                    ❌
-                  </button>
+                  <button onClick={() => handleEdit(student)} className="text-blue-600 hover:text-blue-800 hover:cursor-pointer">✏️</button>
+                  <button onClick={() => handleDelete(student.numero_control)} className="text-red-600 hover:text-red-800 hover:cursor-pointer">❌</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600">
-          Mostrando {displayedStudents.length} de {allStudents.length} estudiantes
+        
+        {/* ✅ COMPONENTES DE PAGINACIÓN */}
+        <div className="px-4 py-3 bg-gray-50 flex justify-between items-center">
+            <p className="text-sm text-gray-600">
+                Página **{currentPage}** de **{totalPages}** (Total: **{count}** estudiantes)
+            </p>
+            <div className="flex gap-2">
+                <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 text-sm rounded-lg border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-50"
+                >
+                    Anterior
+                </button>
+                <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages || count === 0}
+                    className="px-3 py-1 text-sm rounded-lg border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-50"
+                >
+                    Siguiente
+                </button>
+            </div>
         </div>
       </div>
 

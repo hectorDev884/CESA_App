@@ -1,6 +1,7 @@
 // src/services/api_becas_estudiante.js
 const API_BASE = 'http://localhost:8000/api';
 
+
 async function apiFetch(url, options = {}) {
   const response = await fetch(`${API_BASE}${url}`, {
     headers: {
@@ -17,14 +18,11 @@ async function apiFetch(url, options = {}) {
   return response.json();
 }
 
-// --- Students ---
-export function getEstudiantes() {
-  return apiFetch('/estudiantes/');
+export function getEstudiantes(query = "") { 
+  const q = query ? `?${query}` : "";
+  return apiFetch(`/estudiantes/${q}`);
 }
 
-export function getEstudiante(id) {
-  return apiFetch(`/estudiantes/${id}/`);
-}
 
 export function createEstudiante(data) {
   return apiFetch('/estudiantes/', {
@@ -46,6 +44,9 @@ export function deleteEstudiante(id) {
   });
 }
 
+export function getEstudiante(id) {
+  return apiFetch(`/estudiantes/${id}/`);
+}
 // --- Becas ---
 // ✅ getBecas ahora acepta query opcional para search/ordering
 export function getBecas(query = "") {

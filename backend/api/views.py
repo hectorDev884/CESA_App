@@ -185,13 +185,19 @@ def generar_pdf_asistencia(request):
     pdf.save()
     return response
 
+from rest_framework.pagination import PageNumberPagination
+
+class EstudiantePagination(PageNumberPagination):
+    page_size = 10  # máximo 10 registros por página
+
 class EstudianteViewSet(viewsets.ModelViewSet):
     queryset = Estudiante.objects.all()
     serializer_class = EstudianteSerializer
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ['numero_control', 'nombre', 'apellido', 'email', ]
-    ordering_fields = ['numero_control', 'apellido', 'nombre', 'fecha_registro', ]
+    search_fields = ['numero_control', 'nombre', 'apellido', 'email']
+    ordering_fields = ['numero_control', 'apellido', 'nombre', 'fecha_registro']
     ordering = ['apellido', 'nombre']
+    pagination_class = EstudiantePagination  # <-- aquí asignas la paginación
     
 class BecaViewSet(viewsets.ModelViewSet):
     queryset = Beca.objects.all()
