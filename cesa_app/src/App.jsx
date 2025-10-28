@@ -8,7 +8,7 @@ import Footer from "./components/Footer.jsx";
 import Becas from "./pages/Becas.jsx";
 import Eventos from "./pages/Eventos.jsx";
 import Miembros from "./pages/Miembros.jsx";
-import Financiero from "./pages/Financiero.jsx";
+import Financiero from "./pages/Financieros.jsx";
 import AgregarEstudiantesForm from "./components/AgregarEstudiantesForm.jsx";
 import RegistrarBecaForm from "./components/RegistrarBecasForm.jsx";
 
