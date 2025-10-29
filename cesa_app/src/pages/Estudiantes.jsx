@@ -15,25 +15,37 @@ export default function Estudiantes() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [estudiantes, setEstudiantes] = useState([]);
-  const [loading, setLoading] = useState(false); // <--- loader
+  const [loading, setLoading] = useState(false);
 
   // ✅ ESTADOS DE PAGINACIÓN
   const [currentPage, setCurrentPage] = useState(1);
-  const [count, setCount] = useState(0); // Total de registros
-  const [pageSize] = useState(10); // Tamaño de página (debe coincidir con DRF)
+  const [count, setCount] = useState(0);
+  const [pageSize] = useState(10);
   const totalPages = Math.ceil(count / pageSize);
+
+  // Estado para el input de navegación rápida
+  const [goToPageInput, setGoToPageInput] = useState("");
 
   // Modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
+  // Modal para "Ver más"
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [summaryModalContent, setSummaryModalContent] = useState("");
+
   // --- Cargar estudiantes (activado por search o currentPage) ---
   useEffect(() => {
     fetchEstudiantes();
-  }, [search, currentPage]); // ✅ Dependencias actualizadas
+  }, [search, currentPage]);
+
+  // Sincronizar el input de navegación rápida con la página actual
+  useEffect(() => {
+    setGoToPageInput(currentPage.toString());
+  }, [currentPage]);
 
   async function fetchEstudiantes() {
-    setLoading(true); // <--- inicio carga
+    setLoading(true);
     try {
       // 1. Construir la cadena de consulta (query string)
       const params = new URLSearchParams();
@@ -44,28 +56,58 @@ export default function Estudiantes() {
       // Siempre añadir el parámetro de página
       params.append("page", currentPage);
 
-      const query = params.toString(); // "page=1&search=juan"
+      const query = params.toString();
 
       // 2. Llamar a la API
       const response = await getEstudiantes(query);
 
       // 3. Manejar la respuesta de paginación de DRF
-      setEstudiantes(response.results); // La lista de estudiantes de la página actual
-      setCount(response.count); // El total de resultados filtrados
+      setEstudiantes(response.results);
+      setCount(response.count);
     } catch (err) {
       console.error("❌ Error al obtener estudiantes:", err);
       // Opcional: mostrar un mensaje de error al usuario
     } finally {
-      setLoading(false); // <--- fin carga
+      setLoading(false);
     }
   }
 
+  const handleVerMasTotal = () => {
+    setSummaryModalContent(
+      `Total de estudiantes: ${count}\nMostrando página ${currentPage} de ${totalPages}`
+    );
+    setShowSummaryModal(true);
+  };
+
   // --- Manejo de la Paginación ---
   const handlePageChange = (newPage) => {
+    // Si la nueva página es válida, actualizamos el estado
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
     }
   };
+
+  // ✅ NUEVA FUNCIÓN: Navegación rápida
+  const handleGoToPage = (e) => {
+    e.preventDefault();
+    const pageNumber = parseInt(goToPageInput, 10);
+
+    // Validación: debe ser un número, estar dentro del rango y no ser la página actual
+    if (
+      !isNaN(pageNumber) &&
+      pageNumber >= 1 &&
+      pageNumber <= totalPages &&
+      pageNumber !== currentPage
+    ) {
+      setCurrentPage(pageNumber);
+    } else {
+      // Si la entrada no es válida, reseteamos el input al valor actual
+      setGoToPageInput(currentPage.toString());
+      // Opcional: Mostrar un mensaje de error al usuario
+      console.log(`Página no válida: ingrese un número entre 1 y ${totalPages}.`);
+    }
+  };
+
 
   // --- Abrir modal ---
   const handleEdit = (student) => {
@@ -184,19 +226,47 @@ export default function Estudiantes() {
         )}
       </div>
 
-      {/* Cards resumen */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <SummaryCard
           title="Total Estudiantes"
           mainText={loading ? "..." : count}
           subText="Estudiantes totales registrados (filtrados)"
+          onButtonClick={() => {
+            setSearch("");
+            setSearchInput("");
+            setCurrentPage(1);
+            handleVerMasTotal();
+          }}
         />
+
         <SummaryCard
           title="Página Actual"
           mainText={loading ? "..." : `${currentPage} de ${totalPages}`}
           subText={`Mostrando ${loading ? "..." : estudiantes.length} resultados`}
+          onButtonClick={() => {
+            setSummaryModalContent(
+              `Página actual: ${currentPage} de ${totalPages}\nEstudiantes mostrados: ${estudiantes.length}`
+            );
+            setShowSummaryModal(true);
+          }}
         />
       </div>
+      {showSummaryModal && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-lg font-bold mb-4">Detalles</h2>
+            <pre className="whitespace-pre-wrap text-gray-700">{summaryModalContent}</pre>
+            <button
+              onClick={() => setShowSummaryModal(false)}
+              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 hover:cursor-pointer"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
+
 
       {/* Tabla y Paginación */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -226,15 +296,15 @@ export default function Estudiantes() {
             Cargando estudiantes...
           </div>
         ) : estudiantes.length === 0 && count > 0 ? (
-            // Caso: No hay resultados en esta página (ej. después de borrar el último)
-             <div className="p-10 text-center text-gray-500">
-                Página vacía.
-            </div>
+          // Caso: No hay resultados en esta página (ej. después de borrar el último)
+          <div className="p-10 text-center text-gray-500">
+            Página vacía.
+          </div>
         ) : estudiantes.length === 0 && count === 0 ? (
-            // Caso: Sin resultados que coincidan con la búsqueda
-            <div className="p-10 text-center text-gray-500">
-                No se encontraron estudiantes. Intenta una nueva búsqueda.
-            </div>
+          // Caso: Sin resultados que coincidan con la búsqueda
+          <div className="p-10 text-center text-gray-500">
+            No se encontraron estudiantes. Intenta una nueva búsqueda.
+          </div>
         ) : (
           // --- ✅ Tabla con Datos ---
           <>
@@ -306,28 +376,59 @@ export default function Estudiantes() {
           </>
         )}
 
+
         {/* ✅ COMPONENTES DE PAGINACIÓN */}
-        {/* Se muestra solo si hay resultados o si se está cargando la primera página */}
-        {(totalPages > 1 || count > 0) && (
+        {/* Se muestra solo si hay más de una página o si hay resultados para mostrar */}
+        {totalPages > 0 && (
           <div className="px-4 py-3 bg-gray-50 flex flex-col sm:flex-row justify-between items-center border-t border-gray-200">
+            {/* Texto de información */}
             <p className="text-sm text-gray-600 mb-2 sm:mb-0">
               Página **{currentPage}** de **{totalPages}** (Total: **{count}** estudiantes)
             </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1 || loading}
-                className="px-3 py-1 text-sm rounded-lg border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-50 transition duration-150"
-              >
-                Anterior
-              </button>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || count === 0 || loading}
-                className="px-3 py-1 text-sm rounded-lg border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-50 transition duration-150"
-              >
-                Siguiente
-              </button>
+
+            {/* Controles de navegación */}
+            <div className="flex flex-col sm:flex-row gap-3 items-center">
+              {/* ✅ Navegación Rápida */}
+              <form onSubmit={handleGoToPage} className="flex items-center gap-1.5">
+                <label htmlFor="goToPage" className="text-sm text-gray-700">
+                  Ir a:
+                </label>
+                <input
+                  id="goToPage"
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  value={goToPageInput}
+                  onChange={(e) => setGoToPageInput(e.target.value)}
+                  className="w-12 px-2 py-1 text-sm border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-1 focus:ring-green-500"
+                  disabled={loading}
+                />
+                <button
+                  type="submit"
+                  className="px-2 py-1 text-sm rounded-lg border border-green-600 text-green-600 bg-white hover:bg-green-50 disabled:opacity-50 transition duration-150"
+                  disabled={loading || currentPage.toString() === goToPageInput}
+                >
+                  Ir
+                </button>
+              </form>
+
+              {/* Botones Anterior/Siguiente */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1 || loading}
+                  className="px-3 py-1 text-sm rounded-lg border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-50 transition duration-150"
+                >
+                  Anterior
+                </button>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || loading}
+                  className="px-3 py-1 text-sm rounded-lg border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-50 transition duration-150"
+                >
+                  Siguiente
+                </button>
+              </div>
             </div>
           </div>
         )}

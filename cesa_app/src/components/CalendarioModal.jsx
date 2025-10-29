@@ -13,11 +13,11 @@ const COLOR_MAP = {
   brown: "Marrón",
 };
 
-export default function CalendarioModal({ onClose, onGenerate }) {
+export default function CalendarioModal({ onClose, onGenerate, onGenerateAll }) {
   const [nc, setNc] = useState("");
   const [fecha_inicio, setFechaInicio] = useState("");
   const [fecha_fin, setFechaFin] = useState("");
-  const [color, setColor] = useState("red"); // Valor por defecto
+  const [color, setColor] = useState("red");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,9 +34,22 @@ export default function CalendarioModal({ onClose, onGenerate }) {
 
     onGenerate({
       nc,
-      fecha_inicio: fecha_inicio,
-      fecha_fin: fecha_fin,
-      color, // <-- Pasamos el color seleccionado
+      fecha_inicio,
+      fecha_fin,
+      color,
+    });
+  };
+
+  const handleGenerateAll = () => {
+    if (!fecha_inicio || !fecha_fin) {
+      alert("Por favor selecciona el rango de fechas.");
+      return;
+    }
+
+    onGenerateAll({
+      fecha_inicio,
+      fecha_fin,
+      color,
     });
   };
 
@@ -117,19 +130,30 @@ export default function CalendarioModal({ onClose, onGenerate }) {
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+          <div className="flex flex-col gap-3 mt-6 pt-4 border-t border-gray-200">
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium hover:cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium hover:cursor-pointer"
+              >
+                Generar uno
+              </button>
+            </div>
+
+            {/* 🧾 Botón adicional para todas las becas */}
             <button
               type="button"
-              onClick={onClose}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium hover:cursor-pointer"
+              onClick={handleGenerateAll}
+              className="bg-blue-600 text-white w-full py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium hover:cursor-pointer"
             >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium hover:cursor-pointer"
-            >
-              Generar
+              Generar calendario de todas las becas actuales
             </button>
           </div>
         </form>

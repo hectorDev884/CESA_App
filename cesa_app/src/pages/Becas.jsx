@@ -8,6 +8,7 @@ import {
   updateBeca,
   deleteBeca,
   generarCalendario,
+  generarCalendarioGeneral,
 } from "../services/api_becas_estudiante.js"; // backend real
 
 export default function Becas() {
@@ -325,6 +326,7 @@ export default function Becas() {
         <CalendarioModal
           onClose={() => setShowModal(false)}
           onGenerate={handleGenerateCalendar}
+          onGenerateAll={generarCalendarioGeneral}
         />
       )}
       {showEditModal && selectedBeca && (
