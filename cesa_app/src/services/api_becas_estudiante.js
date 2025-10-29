@@ -1,6 +1,5 @@
 // src/services/api_becas_estudiante.js
-const API_BASE = 'http://localhost:8000/api';
-const API_PDF = ''
+const API_BASE = import.meta.env.VITE_API_URL;
 
 
 async function apiFetch(url, options = {}) {
@@ -94,7 +93,7 @@ export async function generarCalendario(data) {
       color: data.color,
     });
 
-    const response = await fetch(`http://localhost:8000/api/pdf/asistencia?${params.toString()}`, {
+    const response = await fetch(`${API_BASE}/pdf/asistencia?${params.toString()}`, {
       method: "GET",
     });
 
@@ -128,7 +127,7 @@ export async function generarCalendarioGeneral(data) {
       // color: data.color,
     });
 
-    const response = await fetch(`http://localhost:8000/api/pdf/asistencia_general/?${params.toString()}`, {
+    const response = await fetch(`${API_BASE}/pdf/asistencia_general/?${params.toString()}`, {
       method: "GET",
     });
 

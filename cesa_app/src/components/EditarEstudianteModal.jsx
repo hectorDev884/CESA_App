@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 
 export default function EditarEstudianteModal({ onClose, onSave, estudianteData }) {
   const [formData, setFormData] = useState({
@@ -12,28 +13,132 @@ export default function EditarEstudianteModal({ onClose, onSave, estudianteData 
     fecha_registro: "",
   });
 
+  const carreras = [
+    "Ing. Informática",
+    "Ing. Sistemas Computacionales",
+    "Ing. Ambiental",
+    "Ing. Industrial",
+    "Ing. Gestión Empresarial",
+    "Ing. Inteligencia Artificial",
+    "Ing. Semiconductores",
+    "Ing. Eléctrica",
+    "Ing. Electrónica",
+    "Contador Público",
+    "Arquitectura",
+    "Mecánica",
+  ];
+
   useEffect(() => {
     if (estudianteData) {
-      setFormData({
-        ...formData,
-        ...estudianteData,
-      });
+      setFormData({ ...formData, ...estudianteData });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estudianteData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Validaciones básicas en tiempo real
+    if (name === "nombre" || name === "apellido") {
+      // Solo letras y espacios
+      const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]*$/;
+      if (!regex.test(value)) return;
+    }
+
+    if (name === "telefono") {
+      // Solo números y máximo 10 dígitos
+      const regex = /^[0-9]*$/;
+      if (!regex.test(value) || value.length > 10) return;
+    }
+
+    if (name === "semestre" && (value < 1 || value > 12)) {
+      Swal.fire({
+        icon: "warning",
+        title: "Semestre inválido",
+        text: "El semestre debe estar entre 1 y 12.",
+      });
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = () => {
+    // Validar número de control: exactamente 8 dígitos
+    if (!/^\d{8}$/.test(formData.numero_control.toString())) {
+      Swal.fire({
+        icon: "error",
+        title: "Número de control inválido",
+        text: "El número de control debe tener exactamente 8 dígitos.",
+      });
+      return false;
+    }
+
+    // Validar nombre y apellido
+    if (!formData.nombre.trim() || !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(formData.nombre)) {
+      Swal.fire({
+        icon: "error",
+        title: "Nombre inválido",
+        text: "El nombre solo debe contener letras y espacios.",
+      });
+      return false;
+    }
+
+    if (!formData.apellido.trim() || !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(formData.apellido)) {
+      Swal.fire({
+        icon: "error",
+        title: "Apellido inválido",
+        text: "El apellido solo debe contener letras y espacios.",
+      });
+      return false;
+    }
+
+    // Validar email básico
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      Swal.fire({
+        icon: "error",
+        title: "Correo electrónico inválido",
+        text: "Por favor ingresa un correo válido.",
+      });
+      return false;
+    }
+
+    // Validar teléfono
+    if (formData.telefono && !/^\d{10}$/.test(formData.telefono)) {
+      Swal.fire({
+        icon: "error",
+        title: "Teléfono inválido",
+        text: "El número telefónico debe tener 10 dígitos.",
+      });
+      return false;
+    }
+
+    // Validar carrera
+    if (!formData.carrera.trim()) {
+      Swal.fire({
+        icon: "error",
+        title: "Carrera requerida",
+        text: "Por favor selecciona una carrera.",
+      });
+      return false;
+    }
+
+    return true;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.numero_control.toString().trim()) {
-      alert("Por favor ingresa el número de control del estudiante.");
-      return;
-    }
+
+    if (!validateForm()) return;
+
     onSave(formData);
+    Swal.fire({
+      icon: "success",
+      title: "Estudiante actualizado",
+      text: "Los datos se guardaron correctamente.",
+      timer: 1500,
+      showConfirmButton: false,
+    });
     onClose();
   };
 
@@ -55,13 +160,15 @@ export default function EditarEstudianteModal({ onClose, onSave, estudianteData 
           {/* Columna izquierda */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Número de Control</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Número de Control
+              </label>
               <input
                 type="text"
                 name="numero_control"
                 value={formData.numero_control || ""}
                 readOnly
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 outline-none"
               />
             </div>
 
@@ -103,13 +210,19 @@ export default function EditarEstudianteModal({ onClose, onSave, estudianteData 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Carrera</label>
-              <input
-                type="text"
+              <select
                 name="carrera"
                 value={formData.carrera || ""}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-              />
+              >
+                <option value="">Selecciona una carrera</option>
+                {carreras.map((carrera) => (
+                  <option key={carrera} value={carrera}>
+                    {carrera}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -121,6 +234,7 @@ export default function EditarEstudianteModal({ onClose, onSave, estudianteData 
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                 min={1}
+                max={12}
               />
             </div>
 
@@ -132,11 +246,14 @@ export default function EditarEstudianteModal({ onClose, onSave, estudianteData 
                 value={formData.telefono || ""}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                maxLength={10}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Registro</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha de Registro
+              </label>
               <input
                 type="date"
                 name="fecha_registro"
