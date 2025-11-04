@@ -1,5 +1,6 @@
 // src/services/api_becas_estudiante.js
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = import.meta.env.VITE_API_URL;
+
 
 async function apiFetch(url, options = {}) {
   const response = await fetch(`${API_BASE}${url}`, {
@@ -17,14 +18,11 @@ async function apiFetch(url, options = {}) {
   return response.json();
 }
 
-// --- Students ---
-export function getEstudiantes() {
-  return apiFetch('/estudiantes/');
+export function getEstudiantes(query = "") { 
+  const q = query ? `?${query}` : "";
+  return apiFetch(`/estudiantes/${q}`);
 }
 
-export function getEstudiante(id) {
-  return apiFetch(`/estudiantes/${id}/`);
-}
 
 export function createEstudiante(data) {
   return apiFetch('/estudiantes/', {
@@ -46,6 +44,9 @@ export function deleteEstudiante(id) {
   });
 }
 
+export function getEstudiante(id) {
+  return apiFetch(`/estudiantes/${id}/`);
+}
 // --- Becas ---
 // ✅ getBecas ahora acepta query opcional para search/ordering
 export function getBecas(query = "") {
@@ -92,7 +93,7 @@ export async function generarCalendario(data) {
       color: data.color,
     });
 
-    const response = await fetch(`http://localhost:8000/api/pdf/asistencia?${params.toString()}`, {
+    const response = await fetch(`${API_BASE}/pdf/asistencia?${params.toString()}`, {
       method: "GET",
     });
 
@@ -117,3 +118,35 @@ export async function generarCalendario(data) {
     alert("Error al generar el PDF de asistencia.");
   }
 }
+
+export async function generarCalendarioGeneral(data) {
+  try {
+    const params = new URLSearchParams({
+      fecha_inicio: data.fecha_inicio,
+      fecha_fin: data.fecha_fin,
+      // color: data.color,
+    });
+
+    const response = await fetch(`${API_BASE}/pdf/asistencia_general/?${params.toString()}`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Error ${response.status}: ${errText}`);
+    }
+
+    // Convertir PDF a blob y descargar
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `calendario_becas_actuales.pdf`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("❌ Error generando PDF general:", err);
+    alert("Error al generar el PDF de todas las becas.");
+  }
+}
+

@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 class Estudiante(models.Model):
-    numero_control = models.IntegerField(primary_key=True)
+    numero_control = models.CharField(primary_key=True, max_length=20)
     nombre = models.CharField(max_length=200)
     apellido = models.CharField(max_length=200)
     email = models.EmailField()
