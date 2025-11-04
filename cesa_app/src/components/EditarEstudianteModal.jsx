@@ -38,15 +38,12 @@ export default function EditarEstudianteModal({ onClose, onSave, estudianteData 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Validaciones básicas en tiempo real
     if (name === "nombre" || name === "apellido") {
-      // Solo letras y espacios
       const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]*$/;
       if (!regex.test(value)) return;
     }
 
     if (name === "telefono") {
-      // Solo números y máximo 10 dígitos
       const regex = /^[0-9]*$/;
       if (!regex.test(value) || value.length > 10) return;
     }
@@ -64,17 +61,16 @@ export default function EditarEstudianteModal({ onClose, onSave, estudianteData 
   };
 
   const validateForm = () => {
-    // Validar número de control: exactamente 8 dígitos
-    if (!/^\d{8}$/.test(formData.numero_control.toString())) {
+    // ✅ Validar número de control: 8 dígitos, con o sin prefijo de una letra
+    if (!/^[A-Za-z]?\d{8}$/.test(formData.numero_control)) {
       Swal.fire({
         icon: "error",
         title: "Número de control inválido",
-        text: "El número de control debe tener exactamente 8 dígitos.",
+        text: "Debe tener 8 dígitos, con o sin una letra al inicio (ej. L22290696 o 22290696).",
       });
       return false;
     }
 
-    // Validar nombre y apellido
     if (!formData.nombre.trim() || !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(formData.nombre)) {
       Swal.fire({
         icon: "error",
@@ -93,7 +89,6 @@ export default function EditarEstudianteModal({ onClose, onSave, estudianteData 
       return false;
     }
 
-    // Validar email básico
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       Swal.fire({
         icon: "error",
@@ -103,7 +98,6 @@ export default function EditarEstudianteModal({ onClose, onSave, estudianteData 
       return false;
     }
 
-    // Validar teléfono
     if (formData.telefono && !/^\d{10}$/.test(formData.telefono)) {
       Swal.fire({
         icon: "error",
@@ -113,7 +107,6 @@ export default function EditarEstudianteModal({ onClose, onSave, estudianteData 
       return false;
     }
 
-    // Validar carrera
     if (!formData.carrera.trim()) {
       Swal.fire({
         icon: "error",

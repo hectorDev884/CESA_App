@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 
 export default function EditarBecaModal({ onClose, onSave, becaData }) {
   const [formData, setFormData] = useState({
@@ -28,22 +29,56 @@ export default function EditarBecaModal({ onClose, onSave, becaData }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.numero_control.toString().trim()) {
-      alert("Por favor ingresa el número de control del estudiante.");
+      Swal.fire({
+        icon: "warning",
+        title: "Falta número de control",
+        text: "Por favor ingresa el número de control del estudiante.",
+        confirmButtonColor: "#16a34a",
+      });
       return;
     }
 
-    // Enviar fecha_fin como null si está vacía
-    const dataToSave = {
-      ...formData,
-      fecha_fin: formData.fecha_fin || null,
-    };
+    // 🌀 Mostrar modal de carga
+    Swal.fire({
+      title: "Guardando cambios...",
+      text: "Por favor espera unos segundos.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
 
-    onSave(dataToSave);
-    onClose();
+    try {
+      const dataToSave = {
+        ...formData,
+        fecha_fin: formData.fecha_fin || null,
+      };
+
+      await onSave(dataToSave);
+
+      Swal.fire({
+        icon: "success",
+        title: "¡Cambios guardados!",
+        text: "La beca se actualizó correctamente.",
+        confirmButtonColor: "#16a34a",
+        timer: 1800,
+        showConfirmButton: false,
+      });
+
+      setTimeout(() => onClose(), 1800);
+    } catch (error) {
+      console.error("❌ Error al guardar la beca:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error al guardar",
+        text: "Ocurrió un problema al guardar los cambios. Intenta nuevamente.",
+        confirmButtonColor: "#dc2626",
+      });
+    }
   };
 
   return (
@@ -60,7 +95,10 @@ export default function EditarBecaModal({ onClose, onSave, becaData }) {
           Editar Información de Beca
         </h2>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
           {/* Columna izquierda */}
           <div className="space-y-4">
             <div>
@@ -72,7 +110,7 @@ export default function EditarBecaModal({ onClose, onSave, becaData }) {
                 name="numero_control"
                 value={formData.numero_control || ""}
                 readOnly
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 outline-none"
               />
             </div>
 

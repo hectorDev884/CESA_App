@@ -8,7 +8,8 @@ export default function EstudianteForm() {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    numero_control: "",
+    prefijo: "",
+    numero_solo: "",
     nombre: "",
     apellido: "",
     email: "",
@@ -35,6 +36,10 @@ export default function EstudianteForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Solo permitir números en el campo de número de control
+    if (name === "numero_solo" && !/^\d*$/.test(value)) return;
+
     setFormData({ ...formData, [name]: value });
   };
 
@@ -42,9 +47,9 @@ export default function EstudianteForm() {
     const numControlRegex = /^[0-9]{8}$/;
     const nameRegex = /^[a-zA-ZÁÉÍÓÚáéíóúñÑ\s]+$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^[0-9]{10}$/; // opcional
+    const phoneRegex = /^[0-9]{10}$/;
 
-    if (!numControlRegex.test(formData.numero_control)) {
+    if (!numControlRegex.test(formData.numero_solo)) {
       Swal.fire({
         icon: "warning",
         title: "Número de control inválido",
@@ -97,9 +102,19 @@ export default function EstudianteForm() {
 
     if (!validateForm()) return;
 
+    // Concatenar prefijo + número (solo si hay prefijo)
+    const numero_control = formData.prefijo
+      ? `${formData.prefijo}${formData.numero_solo}`
+      : formData.numero_solo;
+
+    const dataToSend = {
+      ...formData,
+      numero_control,
+    };
+
     try {
       setLoading(true);
-      await createEstudiante(formData);
+      await createEstudiante(dataToSend);
 
       Swal.fire({
         icon: "success",
@@ -126,18 +141,35 @@ export default function EstudianteForm() {
     <div className="max-w-2xl mx-auto bg-white p-6 mt-10 rounded-lg shadow">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Agregar Estudiante</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Número de Control */}
+        {/* Número de Control (dividido en prefijo + número) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Número de Control</label>
-          <input
-            type="text"
-            name="numero_control"
-            value={formData.numero_control}
-            onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            required
-            maxLength={8}
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Número de Control
+          </label>
+          <div className="flex gap-2">
+            <select
+              name="prefijo"
+              value={formData.prefijo}
+              onChange={handleChange}
+              className="w-28 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">Sin prefijo</option>
+              <option value="C">C</option>
+              <option value="L">L</option>
+              <option value="B">B</option>
+            </select>
+
+            <input
+              type="text"
+              name="numero_solo"
+              value={formData.numero_solo}
+              onChange={handleChange}
+              className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Solo números (8 dígitos)"
+              maxLength={8}
+              required
+            />
+          </div>
         </div>
 
         {/* Nombre y Apellido */}
