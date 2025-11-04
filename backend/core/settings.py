@@ -68,6 +68,15 @@ import os
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
+<<<<<<< HEAD
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True)
+    }
+=======
     try:
         DATABASES = {
             'default': dj_database_url.parse(DATABASE_URL, conn_max_age=60, ssl_require=True)
@@ -80,6 +89,7 @@ if DATABASE_URL:
                 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
             }
         }
+>>>>>>> main
 else:
     DATABASES = {
         'default': {

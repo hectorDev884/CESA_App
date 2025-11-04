@@ -1,0 +1,343 @@
+[
+{
+  "model": "oficios.oficio",
+  "pk": 1,
+  "fields": {
+    "numero_oficio_completo": "",
+    "tipo_oficio": "S",
+    "asunto": "Prueba Solicitud",
+    "destinatario": "Yo",
+    "cuerpo_texto": "Oficio de solicitud",
+    "fecha_creacion": "2025-10-23",
+    "documento_pdf": ""
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 2,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S001/2025",
+    "tipo_oficio": "S",
+    "asunto": "Primer prueba",
+    "destinatario": "Yo",
+    "cuerpo_texto": "Esta es la primer prueba\n\nde generación de \n\nPDF\n\n:D",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S001/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 3,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S002/2025",
+    "tipo_oficio": "S",
+    "asunto": "Prueba 2",
+    "destinatario": "Yo",
+    "cuerpo_texto": "Prueba \n\ndos de la\n\ngeneración \n\nde PDFs",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S002/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 4,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S003/2025",
+    "tipo_oficio": "S",
+    "asunto": "11",
+    "destinatario": "11",
+    "cuerpo_texto": "11",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S003/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 5,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S004/2025",
+    "tipo_oficio": "S",
+    "asunto": "Van para Ocotlán",
+    "destinatario": "C. Jairo Giovanni Álvarez Juárez",
+    "cuerpo_texto": "VAMOOOOOOS\n\n\n\n\n\n\n\n:D",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S004/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 6,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S005/2025",
+    "tipo_oficio": "S",
+    "asunto": "pruebaa",
+    "destinatario": "Yopos",
+    "cuerpo_texto": "cnvvnev\nvevjbejv\n\nvevevev\necjwb r\n\n.",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S005/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 7,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S006/2025",
+    "tipo_oficio": "S",
+    "asunto": "ocjnbejob",
+    "destinatario": "wvin",
+    "cuerpo_texto": "jcnevbeviev\n\n\n\n\n\n\n\nvekvbeve",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S006/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 8,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J001/2025",
+    "tipo_oficio": "J",
+    "asunto": "jenvjevoejbvejjvnejvnelve.   veknvekpvn",
+    "destinatario": "enbfjef",
+    "cuerpo_texto": "nwojcnevevev\n\n\n\n\n\n\n\n\n\n\nevevenvjeve\n\n\n\n\n\n\nvevbejvevev\n\n\n\n\nvptbjoerbvr\n\n\n.",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J001/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 9,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S007/2025",
+    "tipo_oficio": "S",
+    "asunto": "ckhebvih",
+    "destinatario": "ebvhie",
+    "cuerpo_texto": "jcbevbev",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S007/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 10,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S008/2025",
+    "tipo_oficio": "S",
+    "asunto": "CEJBWEB",
+    "destinatario": "ENVJV",
+    "cuerpo_texto": "EKNVEVEVEV\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nVKEBVEKVE\n\n\n\n\n\n\n\n\n\n\nVEVEV",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S008/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 11,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J002/2025",
+    "tipo_oficio": "J",
+    "asunto": "CEBVEHIVBHIEB",
+    "destinatario": "EJJFEJFEJF",
+    "cuerpo_texto": "CJEBVEBVEVBE\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nVEVBEV",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J002/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 12,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J003/2025",
+    "tipo_oficio": "J",
+    "asunto": "levljevejv",
+    "destinatario": "evlevjevj",
+    "cuerpo_texto": "ckneveve\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nveveveveve\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\neevvevekvnejovbneve",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J003/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 13,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J004/2025",
+    "tipo_oficio": "J",
+    "asunto": "evejo",
+    "destinatario": "vej",
+    "cuerpo_texto": "endive\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nveve",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J004/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 14,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J005/2025",
+    "tipo_oficio": "J",
+    "asunto": "Holis",
+    "destinatario": "C. Jairo Álvarez",
+    "cuerpo_texto": "holaaaaaaaa",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J005/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 15,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J006/2025",
+    "tipo_oficio": "J",
+    "asunto": "Holisticas crayolis",
+    "destinatario": "C. Jairo Álvarez",
+    "cuerpo_texto": "prubeaaaaaaa",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J006/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 16,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J007/2025",
+    "tipo_oficio": "J",
+    "asunto": "Holisticas crayolis dos",
+    "destinatario": "C. Jairo Álvarez",
+    "cuerpo_texto": "si?",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J007/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 17,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J008/2025",
+    "tipo_oficio": "J",
+    "asunto": "Holaaaa dije",
+    "destinatario": "C. Jairo Álvarez",
+    "cuerpo_texto": "cebebveveve",
+    "fecha_creacion": "2025-10-24",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J008/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 18,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J009/2025",
+    "tipo_oficio": "J",
+    "asunto": "f3",
+    "destinatario": "v",
+    "cuerpo_texto": "f4pkf4",
+    "fecha_creacion": "2025-10-28",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J009/2025_Nwr7Z0j.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 19,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J010/2025",
+    "tipo_oficio": "J",
+    "asunto": "j",
+    "destinatario": "j",
+    "cuerpo_texto": "j",
+    "fecha_creacion": "2025-10-28",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J010/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 20,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S009/2025",
+    "tipo_oficio": "S",
+    "asunto": "k",
+    "destinatario": "k",
+    "cuerpo_texto": "k",
+    "fecha_creacion": "2025-10-28",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S009/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 21,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J011/2025",
+    "tipo_oficio": "J",
+    "asunto": "kjbv",
+    "destinatario": "jkfbv",
+    "cuerpo_texto": "kjb v",
+    "fecha_creacion": "2025-10-28",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J011/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 22,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S010/2025",
+    "tipo_oficio": "S",
+    "asunto": "Test",
+    "destinatario": "Dr. Sergio Octavio Rosales Aguayo",
+    "cuerpo_texto": "hebfiephfbeq",
+    "fecha_creacion": "2025-10-28",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S010/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 23,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./S011/2025",
+    "tipo_oficio": "S",
+    "asunto": "Test 2",
+    "destinatario": "Mtra. Erika",
+    "cuerpo_texto": "ijjebnvoenveoine",
+    "fecha_creacion": "2025-10-28",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/S011/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 24,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J012/2025",
+    "tipo_oficio": "J",
+    "asunto": "d",
+    "destinatario": "d",
+    "cuerpo_texto": "dedededetfut",
+    "fecha_creacion": "2025-11-04",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J012/2025.pdf"
+  }
+},
+{
+  "model": "oficios.oficio",
+  "pk": 25,
+  "fields": {
+    "numero_oficio_completo": "OFICIO N0. C.E.S.A./J013/2025",
+    "tipo_oficio": "J",
+    "asunto": "q",
+    "destinatario": "q",
+    "cuerpo_texto": "q",
+    "fecha_creacion": "2025-11-04",
+    "documento_pdf": "oficios/pdf/OFICIO_N0_CESA/J013/2025.pdf"
+  }
+},
+{
+  "model": "oficios.contadoroficios",
+  "pk": 1,
+  "fields": {
+    "prefijo": "S",
+    "contador": 11
+  }
+},
+{
+  "model": "oficios.contadoroficios",
+  "pk": 2,
+  "fields": {
+    "prefijo": "J",
+    "contador": 13
+  }
+}
+]
