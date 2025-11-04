@@ -204,19 +204,14 @@ def generar_pdf_asistencia_general(request):
     if fecha_fin < fecha_inicio:
         return HttpResponseBadRequest("La fecha fin debe ser posterior o igual a la fecha inicio")
 
-    # --- Colores predefinidos ---
     COLOR_MAP = {
-        "red": (0.75, 0.12, 0.15),
-        "green": (0.0, 0.6, 0.3),
-        "blue": (0.0, 0.3, 0.7),
-        "orange": (1.0, 0.5, 0.0),
-        "purple": (0.5, 0.0, 0.5),
-        "teal": (0.0, 0.5, 0.5),
-        "yellow": (1.0, 0.9, 0.0),
-        "pink": (1.0, 0.4, 0.6),
-        "gray": (0.5, 0.5, 0.5),
-        "brown": (0.6, 0.4, 0.2),
-    }
+    "red": (0.8, 0.3, 0.3),    # rojo suave
+    "yellow": (1, 1, 0),
+    "green": (0.4, 0.8, 0.4),  # verde suave
+    "blue": (0.4, 0.6, 0.9),   # azul suave
+    "pink": (1.0, 0.6, 0.7)    # rosa claro
+}
+
     color_names = list(COLOR_MAP.keys())
 
     # --- Obtener becas aprobadas ---
@@ -267,8 +262,8 @@ def generar_pdf_asistencia_general(request):
         nombre = f"{estudiante.nombre} {estudiante.apellido}"
         nc = estudiante.numero_control
 
-        # Cambiar color cada 10 alumnos
-        color_index = (i // 10) % len(color_names)
+        # Cambiar color cada 15 alumnos
+        color_index = (i // 15) % len(color_names)
         header_color = COLOR_MAP[color_names[color_index]]
 
         # Dibujar encabezado
@@ -340,6 +335,9 @@ class EstudianteViewSet(viewsets.ModelViewSet):
     ordering = ['apellido', 'nombre']
     pagination_class = EstudiantePagination  # <-- aquí asignas la paginación
     
+class BecaPagination(PageNumberPagination):
+    page_size = 10
+    
 class BecaViewSet(viewsets.ModelViewSet):
     queryset = Beca.objects.all()
     serializer_class = BecaSerializer
@@ -347,6 +345,7 @@ class BecaViewSet(viewsets.ModelViewSet):
     search_fields = ['tipo_beca', 'estatus', 'numero_control__numero_control', 
                      'numero_control__nombre', 'numero_control__apellido']
     ordering_fields = ['tipo_beca', 'estatus']
+    # pagination_class = EstudiantePagination
 
 class AsistenciaBecaViewSet(viewsets.ModelViewSet):
     queryset = AsistenciaBeca.objects.all()
