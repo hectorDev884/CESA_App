@@ -220,20 +220,6 @@ export default function AddOffice() {
           </button>
         </div>
       </div>
-
-      {/* Sección de Lista de Trámites (Se mantiene la estructura de la tabla) */}
-      <h3 className="text-xl font-bold mb-4 text-gray-800">
-        Trámites Registrados (Lista Local - {tramites.length})
-      </h3>
-      {/* El contenido de la tabla DEBE actualizarse para reflejar los datos del backend */}
-      <div className="overflow-x-auto">
-        {/* Aquí iría la tabla, idealmente cargando datos de un endpoint GET de Django */}
-        <p className="text-center text-gray-500 p-4 border rounded-lg bg-gray-50">
-          *Esta tabla requiere una nueva función `fetchTramites` para cargar los
-          oficios desde su API de Django.*
-        </p>
-        {/* ... código de la tabla original (simplificado) ... */}
-      </div>
     </div>
   );
 }

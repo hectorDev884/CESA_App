@@ -1,39 +1,76 @@
-import React, { useState } from "react";
-import AddOffice from "../components/AddOffice.jsx";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const Eventos = () => {
-  const [active, setActive] = useState("office");
+const API_LIST_URL = "http://127.0.0.1:8000/api/oficios/lista/";
 
-  const offices = [
-    {
-      key: 1,
-      name: "S001",
-      archive: "S001.pdf",
-      date: "2025-10-14",
-      status: "Entregado",
-    },
-    {
-      key: 2,
-      name: "J001",
-      archive: "J001.pdf",
-      date: "2025-10-01",
-      status: "En espera",
-    },
-  ];
+const Oficios = () => {
+  const [oficios, setOficios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchOficios = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(API_LIST_URL);
+
+      if (!response.ok) {
+        throw new Error(
+          `Error en la API: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+
+      setOficios(data);
+    } catch (err) {
+      console.error("Fallo la carga de oficios:", err);
+      setError("No se pudieron cargar los oficios. Verifica la API.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOficios();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="text-center p-10">
+        <p className="text-xl text-blue-600">Cargando oficios...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-10 bg-red-100 text-red-700 border border-red-400 rounded-lg">
+        <p className="font-bold">Error de Carga:</p>
+        <p>{error}</p>
+        <p>Asegúrate de que el servidor de Django esté corriendo.</p>
+      </div>
+    );
+  }
+
+  // Si no hay oficios
+  if (oficios.length === 0) {
+    return (
+      <div className="text-center p-10">
+        <p className="text-xl text-gray-500">No hay oficios registrados.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold text-center mb-6">
         Sistema de Oficios - Comité Ejecutivo de la Sociedad de Alumnos (CESA)
-        del ITCG
       </h1>
 
       <div className="flex justify-center gap-3 mb-6">
-        {/* Agregar Oficio */}
         <Link
           to={"/oficios/agregar-oficio"}
-          onClick={() => setActive("office")}
           className="mt-4 sm:mt-0 bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 hover:cursor-pointer"
         >
           <svg
@@ -52,89 +89,89 @@ const Eventos = () => {
           </svg>
           Agregar Oficio
         </Link>
-
-        {/* Control de oficios */}
       </div>
+
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-100">
             <tr>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                Name
+                Número de Oficio
               </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                Archive
+                Tipo Oficio
               </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                Date
+                Asunto
               </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                Status
+                Destinatario
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                Estado
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                Fecha
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                Ver pdf
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {offices.map((office) => (
-              <tr key={office.key} className="hover:bg-gray-50">
+            {oficios.map((oficio) => (
+              <tr key={oficio.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm text-gray-900">
-                  {office.name}
+                  {oficio.numero_oficio_completo}
                 </td>
-                <td className="px-4 py-3 text-sm text-[#036942] font-medium">
-                  {office.archive}
+                <td className="px-4 py-3 text-sm text-gray-900">
+                  {oficio.tipo_oficio}
                 </td>
-                <td className="px-4 py-3 text-sm text-[#036942] font-medium">
-                  {office.date}
+                <td className="px-4 py-3 text-sm text-gray-900">
+                  {oficio.asunto}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-900">
+                  {oficio.destinatario}
                 </td>
                 <td className="px-4 py-3">
                   <span
                     className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      office.status === "Entregado"
+                      oficio.estado === "Entregado"
                         ? "bg-green-100 text-green-700"
-                        : office.status === "En espera"
+                        : oficio.estado === "Pendiente"
                         ? "bg-yellow-100 text-yellow-700"
                         : "bg-red-100 text-red-700"
                     }`}
                   >
-                    {office.status}
+                    {oficio.estado || "N/A"}
                   </span>
                 </td>
-                <td className="px-4 py-3 flex justify-center gap-3">
-                  <button className="text-blue-600 hover:text-blue-800">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15.232 5.232l3.536 3.536M9 13l3 3 8-8-3-3-8 8z"
-                      />
-                    </svg>
-                  </button>
 
-                  <button
-                    onClick={() => handleDelete(student.numeroControl)}
-                    className="text-red-600 hover:text-red-800"
+                <td className="px-4 py-3 text-sm text-[#036942] font-medium">
+                  {new Date(oficio.fecha_creacion).toLocaleDateString()}{" "}
+                </td>
+
+                <td className="px-4 py-3 text-center">
+                  <a
+                    href={oficio.documento_pdf_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 transition duration-150 inline-block z-10"
+                    title="Abrir Documento PDF"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
                     >
                       <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
+                        fillRule="evenodd"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0111 3.414L15.586 8a2 2 0 01.414 1.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1-5a1 1 0 100 2h4a1 1 0 100-2H7z"
+                        clipRule="evenodd"
                       />
                     </svg>
-                  </button>
+                  </a>
                 </td>
               </tr>
             ))}
@@ -142,12 +179,12 @@ const Eventos = () => {
         </table>
 
         {/* Footer */}
-        {/* <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600">
-            Mostrando {filteredStudents.length} de {students.length} estudiantes
-          </div> */}
+        <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600">
+          Mostrando {oficios.length} oficios.
+        </div>
       </div>
     </div>
   );
 };
 
-export default Eventos;
+export default Oficios;
