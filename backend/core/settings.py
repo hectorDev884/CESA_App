@@ -68,18 +68,13 @@ import os
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    try:
-        DATABASES = {
-            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
-        }
-    except OperationalError:
-        print("⚠️ No se pudo conectar a Supabase. Usando base local.")
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-            }
-        }
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True)
+    }
 else:
     DATABASES = {
         'default': {

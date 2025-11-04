@@ -19,7 +19,7 @@ class OficioCreateAPIView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        tipo_recibido = serializer.validated_data.get('tipo_oficio')
+        tipo_recibido = serializer.validated_data.get('tipo_oficio').strip().upper()
 
         try:
             with transaction.atomic():
