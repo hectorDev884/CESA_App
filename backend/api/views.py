@@ -206,6 +206,7 @@ def generar_pdf_asistencia_general(request):
 
     COLOR_MAP = {
     "red": (0.8, 0.3, 0.3),    # rojo suave
+    "yellow": (1, 1, 0),
     "green": (0.4, 0.8, 0.4),  # verde suave
     "blue": (0.4, 0.6, 0.9),   # azul suave
     "pink": (1.0, 0.6, 0.7)    # rosa claro
