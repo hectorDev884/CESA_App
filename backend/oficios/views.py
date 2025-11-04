@@ -11,6 +11,16 @@ from .pdf_utils import generar_pdf_oficio
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
+class OficioListAPIView(APIView):
+    """Retorna la lista de todos los oficios."""
+    def get(self, request):
+        oficios = Oficio.objects.all().order_by('-fecha_creacion') # Ordena por fecha descendente
+        serializer = OficioSerializer(
+            oficios,
+            many=True,
+            context={'request' : request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 @method_decorator(csrf_exempt, name='dispatch')
 class OficioCreateAPIView(APIView):
     def post(self, request, *args, **kwargs):
