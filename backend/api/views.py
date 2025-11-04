@@ -345,7 +345,7 @@ class BecaViewSet(viewsets.ModelViewSet):
     search_fields = ['tipo_beca', 'estatus', 'numero_control__numero_control', 
                      'numero_control__nombre', 'numero_control__apellido']
     ordering_fields = ['tipo_beca', 'estatus']
-    # pagination_class = EstudiantePagination
+    pagination_class = EstudiantePagination
 
 class AsistenciaBecaViewSet(viewsets.ModelViewSet):
     queryset = AsistenciaBeca.objects.all()
