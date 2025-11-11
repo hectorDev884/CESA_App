@@ -205,11 +205,11 @@ def generar_pdf_asistencia_general(request):
         return HttpResponseBadRequest("La fecha fin debe ser posterior o igual a la fecha inicio")
 
     COLOR_MAP = {
-    "red": (0.8, 0.3, 0.3),    # rojo suave
-    "yellow": (1, 1, 0),
-    "green": (0.4, 0.8, 0.4),  # verde suave
-    "blue": (0.4, 0.6, 0.9),   # azul suave
-    "pink": (1.0, 0.6, 0.7)    # rosa claro
+    "yellow": (0.894, 0.922, 0.157),
+    "red": (0.722, 0.200, 0.086),
+    "green": (0.310, 0.722, 0.086),
+    "blue": (0.086, 0.565, 0.722),
+    "pink": (0.800, 0.094, 0.753),
 }
 
     color_names = list(COLOR_MAP.keys())
@@ -352,4 +352,5 @@ class AsistenciaBecaViewSet(viewsets.ModelViewSet):
     serializer_class = AsistenciaBecaSerializer
     filter_backends = [SearchFilter]
     search_fields = ['beca_id__beca_id', 'asistencia_id']
+
     
