@@ -68,7 +68,7 @@ export default function Miembros() {
       // Nota: Esta llamada debería idealmente apuntar a una tabla de estudiantes,
       // pero por ahora usamos Miembros como fuente de NC para validación.
       const { data, error } = await supabase
-        .from('Miembros')
+        .from('estudiante')
         .select('*');
 
       if (error) {
@@ -154,7 +154,7 @@ export default function Miembros() {
       await fetchMiembros(); // Recargar lista de miembros
       await fetchInteracciones(); // Recargar lista de interacciones
       setMiembrosFiltrados(null);
-      alert("Miembro y sus interacciones eliminados con éxito!");
+      alert("Miembro  eliminado!");
     }
   };
 
