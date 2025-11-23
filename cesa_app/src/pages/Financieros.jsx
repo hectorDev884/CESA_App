@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 // 1. Importar useLocation para leer el estado de la navegación
 import { useLocation } from "react-router-dom"; 
-import { supabase } from "../lib/supabase";
+import { supabase } from "../supabaseClient.js";
 import FinanzasModal from "../components/FinanzasModal";
 import FinanzasDetalle from "../components/FinanzasDetalle";
 import SummaryCard from "../components/SummaryCard";

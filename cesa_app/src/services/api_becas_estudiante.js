@@ -1,11 +1,17 @@
-// src/services/api_becas_estudiante.js
+import { supabase } from "../supabaseClient";
 const API_BASE = import.meta.env.VITE_API_URL;
 
-
 async function apiFetch(url, options = {}) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
   const response = await fetch(`${API_BASE}${url}`, {
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers,
     },
     ...options,
   });
@@ -18,29 +24,28 @@ async function apiFetch(url, options = {}) {
   return response.json();
 }
 
-export function getEstudiantes(query = "") { 
+export function getEstudiantes(query = "") {
   const q = query ? `?${query}` : "";
   return apiFetch(`/estudiantes/${q}`);
 }
 
-
 export function createEstudiante(data) {
-  return apiFetch('/estudiantes/', {
-    method: 'POST',
+  return apiFetch("/estudiantes/", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
 
 export function updateEstudiante(id, data) {
   return apiFetch(`/estudiantes/${id}/`, {
-    method: 'PATCH',
+    method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
 export function deleteEstudiante(id) {
   return apiFetch(`/estudiantes/${id}/`, {
-    method: 'DELETE',
+    method: "DELETE",
   });
 }
 
@@ -59,29 +64,29 @@ export function getBeca(id) {
 }
 
 export function createBeca(data) {
-  return apiFetch('/becas/', {
-    method: 'POST',
+  return apiFetch("/becas/", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
 
 export function updateBeca(id, data) {
   return apiFetch(`/becas/${id}/`, {
-    method: 'PATCH',
+    method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
 export function deleteBeca(id) {
   return apiFetch(`/becas/${id}/`, {
-    method: 'DELETE',
+    method: "DELETE",
   });
 }
 
 export async function generarCalendario(data) {
   try {
     // 🔹 Esperamos la respuesta del backend
-    const estudiante = await getEstudiante(data.nc); 
+    const estudiante = await getEstudiante(data.nc);
     const nombreCompleto = `${estudiante.nombre} ${estudiante.apellido}`;
 
     // 🔹 Construimos la URL con los parámetros GET
@@ -93,9 +98,12 @@ export async function generarCalendario(data) {
       color: data.color,
     });
 
-    const response = await fetch(`${API_BASE}/pdf/asistencia?${params.toString()}`, {
-      method: "GET",
-    });
+    const response = await fetch(
+      `${API_BASE}/pdf/asistencia?${params.toString()}`,
+      {
+        method: "GET",
+      }
+    );
 
     if (!response.ok || estudiante.becas.length === 0) {
       const errText = await response.text();
@@ -112,7 +120,6 @@ export async function generarCalendario(data) {
     link.download = `calendario_${estudiante.numero_control}.pdf`;
     link.click();
     window.URL.revokeObjectURL(url);
-
   } catch (err) {
     console.error("❌ Error generando calendario:", err);
     alert("Error al generar el PDF de asistencia.");
@@ -127,9 +134,12 @@ export async function generarCalendarioGeneral(data) {
       // color: data.color,
     });
 
-    const response = await fetch(`${API_BASE}/pdf/asistencia_general/?${params.toString()}`, {
-      method: "GET",
-    });
+    const response = await fetch(
+      `${API_BASE}/pdf/asistencia_general/?${params.toString()}`,
+      {
+        method: "GET",
+      }
+    );
 
     if (!response.ok) {
       const errText = await response.text();
@@ -149,4 +159,3 @@ export async function generarCalendarioGeneral(data) {
     alert("Error al generar el PDF de todas las becas.");
   }
 }
-
