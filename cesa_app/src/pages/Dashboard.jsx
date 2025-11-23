@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase"; // Asegúrate que esta ruta es correcta
+import { supabase } from "../supabaseClient.js"; // Asegúrate que esta ruta es correcta
 import SummaryCard from "../components/SummaryCard.jsx";
 import FinancialSection from "../components/FinancialSection.jsx";
 

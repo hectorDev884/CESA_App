@@ -1,10 +1,19 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const { session, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    window.location.href = "/login"; // redirige tras cerrar sesión
+  };
 
   return (
     <nav className="bg-[#036942] shadow-lg fixed top-0 w-full z-50">
@@ -61,15 +70,30 @@ const Navigation = () => {
 
           {/* User Menu */}
           <div className="hidden md:block">
-            <div className="ml-4 flex items-center md:ml-6">
-              <div className="flex items-center space-x-2">
-                <span className="text-white text-sm font-medium">Admin</span>
-                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">A</span>
-                </div>
+            {session ? (
+              <div className="ml-4 flex items-center space-x-3">
+                <span className="text-white text-sm font-medium">
+                  {session.user.email}
+                </span>
+
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition"
+                >
+                  Cerrar sesión
+                </button>
               </div>
-            </div>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-white bg-opacity-20 text-white px-3 py-1 rounded-lg text-sm hover:bg-opacity-30 transition"
+              >
+                Iniciar sesión
+              </Link>
+            )}
           </div>
+
+
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
@@ -149,15 +173,28 @@ const Navigation = () => {
             Oficios
           </Link>
           <div className="pt-4 pb-3 border-t border-white border-opacity-10">
-            <div className="flex items-center px-3">
-              <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
+            {session ? (
+              <div className="px-3 space-y-3">
+                <p className="text-white text-base font-medium">{session.user.email}</p>
+
+                <button
+                  onClick={() => { handleLogout(); toggleMenu(); }}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white text-center py-2 rounded-lg"
+                >
+                  Cerrar sesión
+                </button>
               </div>
-              <div className="ml-3">
-                <div className="text-base font-medium text-white">Admin</div>
-              </div>
-            </div>
+            ) : (
+              <Link
+                to="/login"
+                onClick={toggleMenu}
+                className="block w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-center py-2 rounded-lg"
+              >
+                Iniciar sesión
+              </Link>
+            )}
           </div>
+
         </div>
       </div>
     </nav>
