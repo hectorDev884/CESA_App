@@ -52,7 +52,8 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{ session, loading, signIn, signOut }}>
-      {children}
+      {loading ? <div>Loading...</div> : children}
     </AuthContext.Provider>
   );
+
 }
