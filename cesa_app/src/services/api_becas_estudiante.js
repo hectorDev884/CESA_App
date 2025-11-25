@@ -159,3 +159,34 @@ export async function generarCalendarioGeneral(data) {
     alert("Error al generar el PDF de todas las becas.");
   }
 }
+
+export async function generarBackup(name) {
+  try {
+    const params = new URLSearchParams({ name });
+
+    const response = await fetch(
+      `${API_BASE}/backup/generar/?${params.toString()}`,
+      { method: "GET" }
+    );
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Error ${response.status}: ${errText}`);
+    }
+
+    // Convertir archivo en blob .sql
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    // Descargar archivo
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${name}.sql`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error("❌ Error generando backup:", err);
+    alert("Error al crear el respaldo.");
+  }
+}

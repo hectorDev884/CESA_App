@@ -15,6 +15,7 @@ import RegistrarBecaForm from "./components/RegistrarBecasForm.jsx";
 import AddOffice from "./components/AddOffice.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import LoginForm from "./components/LoginForm.jsx";
+import BackupPage from "./backup/BackupPage.jsx";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         {/* Main Content */}
         <main className="pt-16">
           <Routes>
+            <Route path="/backup" element={<BackupPage />} />
             <Route element={<GuestRoute />}>
               <Route path="/login" element={<LoginForm />} />
             </Route>

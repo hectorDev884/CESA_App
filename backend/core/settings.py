@@ -28,7 +28,8 @@ INSTALLED_APPS = [
 
     # My app
     'api',
-    'oficios'
+    'oficios',
+    'backups',
 ]
 
 # --- Middleware (CorsMiddleware arriba de CommonMiddleware) ---
