@@ -9,8 +9,7 @@ def generar_backup(request):
     if not name:
         return HttpResponseBadRequest("Parametro 'name' requerido")
 
-    # 🔥 CONEXIÓN DIRECTA YA CARGADA EN settings.py
-    connection_url = settings.DATABASE_URL  # <-- Aquí ya existe la cadena completa
+    connection_url = settings.DATABASE_URL 
 
     try:
         # Ejecutar pg_dump
