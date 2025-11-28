@@ -27,7 +27,6 @@ function App() {
         {/* Main Content */}
         <main className="pt-16">
           <Routes>
-            <Route path="/backup" element={<BackupPage />} />
             <Route element={<GuestRoute />}>
               <Route path="/login" element={<LoginForm />} />
             </Route>
@@ -46,6 +45,7 @@ function App() {
               />
               <Route path="/agregar-beca" element={<RegistrarBecaForm />} />
               <Route path="/oficios/agregar-oficio" element={<AddOffice />} />
+              <Route path="/backup" element={<BackupPage />} />
             </Route>
           </Routes>
           {/* Footer */}
