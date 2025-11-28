@@ -15,6 +15,7 @@ import RegistrarBecaForm from "./components/RegistrarBecasForm.jsx";
 import AddOffice from "./components/AddOffice.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import LoginForm from "./components/LoginForm.jsx";
+import BackupPage from "./backup/BackupPage.jsx";
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
               />
               <Route path="/agregar-beca" element={<RegistrarBecaForm />} />
               <Route path="/oficios/agregar-oficio" element={<AddOffice />} />
+              <Route path="/backup" element={<BackupPage />} />
             </Route>
           </Routes>
           {/* Footer */}
