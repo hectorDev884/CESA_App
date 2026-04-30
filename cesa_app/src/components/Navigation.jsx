@@ -1,25 +1,28 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-
-const Navigation = () => {
+const Navigation = ({ isAdmin }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const { session, signOut } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await signOut();
-    window.location.href = "/login"; // redirige tras cerrar sesión
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
+
+  const navLinkStyle =
+    "text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300";
 
   return (
     <nav className="bg-[#036942] shadow-lg fixed top-0 w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo/Brand */}
+
+          {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/">
               <h2 className="text-white text-xl font-semibold">C.E.S.A</h2>
@@ -27,53 +30,31 @@ const Navigation = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
-              <Link
-                to="/eventos"
-                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
-              >
-                Eventos
-              </Link>
-              <Link
-                to="/financiero"
-                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
-              >
-                Financiero
-              </Link>
-              <Link
-                to="/miembros"
-                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
-              >
-                Miembros
-              </Link>
-              <Link
-                to="/becas"
-                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
-              >
-                Becas
-              </Link>
-              <Link
-                to="/estudiantes"
-                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
-              >
-                Estudiantes
-              </Link>
-              <Link
-                to="/oficios"
-                className="text-white hover:bg-white hover:text-black hover:bg-opacity-10 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
-              >
-                Oficios
-              </Link>
-            </div>
-          </div>
+          {user && (
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-baseline space-x-4">
 
-          {/* User Menu */}
+                <Link to="/eventos" className={navLinkStyle}>Eventos</Link>
+                <Link to="/miembros" className={navLinkStyle}>Miembros</Link>
+                <Link to="/becas" className={navLinkStyle}>Becas</Link>
+                <Link to="/estudiantes" className={navLinkStyle}>Estudiantes</Link>
+
+                {/* SOLO ADMIN */}
+                {isAdmin && (
+                  <Link to="/backup" className={navLinkStyle}>Backup</Link>,
+                  <Link to="/financiero" className={navLinkStyle}>Financiero</Link>
+                )}
+
+              </div>
+            </div>
+          )}
+
+          {/* User Menu Desktop */}
           <div className="hidden md:block">
-            {session ? (
+            {user ? (
               <div className="ml-4 flex items-center space-x-3">
                 <span className="text-white text-sm font-medium">
-                  {session.user.email}
+                  {user.email}
                 </span>
 
                 <button
@@ -93,93 +74,55 @@ const Navigation = () => {
             )}
           </div>
 
-
-
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
             <button
               onClick={toggleMenu}
               className="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-white hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
             >
-              <svg
-                className="h-6 w-6"
-                stroke="currentColor"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  className={!isMenuOpen ? "block" : "hidden"}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-                <path
-                  className={isMenuOpen ? "block" : "hidden"}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              ☰
             </button>
           </div>
+
         </div>
       </div>
 
       {/* Mobile Navigation */}
       <div className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#036942] border-t border-white border-opacity-10">
-          <Link
-            to="/eventos"
-            className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
-            onClick={toggleMenu}
-          >
-            Eventos
-          </Link>
-          <Link
-            to="/financiero"
-            className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
-            onClick={toggleMenu}
-          >
-            Financiero
-          </Link>
-          <Link
-            to="/miembros"
-            className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
-            onClick={toggleMenu}
-          >
-            Miembros
-          </Link>
-          <Link
-            to="/becas"
-            className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
-            onClick={toggleMenu}
-          >
-            Becas
-          </Link>
-          <Link
-            to="/estudiantes"
-            className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
-            onClick={toggleMenu}
-          >
-            Estudiantes
-          </Link>
-          <Link
-            to="/oficios"
-            className="text-white hover:bg-white hover:bg-opacity-10 block px-3 py-2 rounded-md text-base font-medium"
-            onClick={toggleMenu}
-          >
-            Oficios
-          </Link>
+
+          {user && (
+            <>
+              <Link to="/eventos" onClick={toggleMenu} className={navLinkStyle}>Eventos</Link>
+              <Link to="/financiero" onClick={toggleMenu} className={navLinkStyle}>Financiero</Link>
+              <Link to="/miembros" onClick={toggleMenu} className={navLinkStyle}>Miembros</Link>
+              <Link to="/becas" onClick={toggleMenu} className={navLinkStyle}>Becas</Link>
+              <Link to="/estudiantes" onClick={toggleMenu} className={navLinkStyle}>Estudiantes</Link>
+
+              {isAdmin && (
+                <Link to="/backup" onClick={toggleMenu} className={navLinkStyle}>
+                  Backup
+                </Link>,
+                <Link to="/financiero" onClick={toggleMenu} className={navLinkStyle}>
+                  Financiero
+                </Link>
+              )}
+            </>
+          )}
+
           <div className="pt-4 pb-3 border-t border-white border-opacity-10">
-            {session ? (
+            {user ? (
               <div className="px-3 space-y-3">
-                <p className="text-white text-base font-medium">{session.user.email}</p>
+                <p className="text-white text-base font-medium">
+                  {user.email}
+                </p>
 
                 <button
-                  onClick={() => { handleLogout(); toggleMenu(); }}
-                  className="w-full bg-red-500 hover:bg-red-600 text-white text-center py-2 rounded-lg"
+                  onClick={() => {
+                    handleLogout();
+                    toggleMenu();
+                  }}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white text-center py-2 rounded-lg transition"
                 >
                   Cerrar sesión
                 </button>
@@ -188,7 +131,7 @@ const Navigation = () => {
               <Link
                 to="/login"
                 onClick={toggleMenu}
-                className="block w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-center py-2 rounded-lg"
+                className="block w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-center py-2 rounded-lg transition"
               >
                 Iniciar sesión
               </Link>

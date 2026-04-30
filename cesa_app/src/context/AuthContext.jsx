@@ -1,59 +1,96 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
+import md5 from "crypto-js/md5";
 
 const AuthContext = createContext();
-
-// Hook para facilitar el acceso al contexto
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
-  // Carga inicial de sesión
+  // Cargar sesión desde localStorage
   useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session ?? null);
-      setLoading(false);
-    };
+    const token = localStorage.getItem("token");
 
-    getSession();
+    if (token) {
+      const decoded = JSON.parse(atob(token));
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-    });
-
-    return () => sub.subscription?.unsubscribe();
+      if (decoded.exp > Date.now()) {
+        setUser(decoded);
+      } else {
+        localStorage.removeItem("token");
+      }
+    }
   }, []);
 
-  // -------------------
   // LOGIN
-  // -------------------
   const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const hashedPassword = md5(password).toString();
 
-    if (error) return { error };
-    setSession(data.session);
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select("*")
+      .eq("email", email)
+      .eq("password_md5", hashedPassword)
+      .single();
 
-    return { session: data.session };
+    if (error || !data) {
+      return { error: "Credenciales inválidas" };
+    }
+
+    // Obtener rol
+    const { data: roleData } = await supabase
+      .from("roles_usuario")
+      .select("rol_id")
+      .eq("usuario_id", data.id)
+      .single();
+
+    const payload = {
+      id: data.id,
+      email: data.email,
+      rol: roleData.rol_id,
+      exp: Date.now() + 1000 * 60 * 60, // 1 hora
+    };
+
+    const fakeJWT = btoa(JSON.stringify(payload));
+    localStorage.setItem("token", fakeJWT);
+
+    setUser(payload);
+
+    return { user: payload };
   };
 
-  // -------------------
+  // REGISTER (crea usuario con rol 2)
+  const register = async (email, password) => {
+    const hashedPassword = md5(password).toString();
+
+    const { data, error } = await supabase
+      .from("usuarios")
+      .insert([{ email, password_md5: hashedPassword }])
+      .select()
+      .single();
+
+    if (error) return { error };
+
+    await supabase.from("roles_usuario").insert([
+      {
+        usuario_id: data.id,
+        rol_id: 2,
+      },
+    ]);
+
+    return { user: data };
+  };
+
   // LOGOUT
-  // -------------------
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
+  const logout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ session, loading, signIn, signOut }}>
-      {loading ? <div>Loading...</div> : children}
+    <AuthContext.Provider value={{ user, signIn, register, logout }}>
+      {children}
     </AuthContext.Provider>
   );
-
 }

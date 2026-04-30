@@ -14,41 +14,51 @@ import AgregarEstudiantesForm from "./components/AgregarEstudiantesForm.jsx";
 import RegistrarBecaForm from "./components/RegistrarBecasForm.jsx";
 import AddOffice from "./components/AddOffice.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import RoleRoute from "./routes/RoleRoute.jsx";
 import LoginForm from "./components/LoginForm.jsx";
 import BackupPage from "./backup/BackupPage.jsx";
+import RegisterForm from "./components/RegisterForm.jsx";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 1;
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
-        {/* Navigation */}
-        <Navigation />
+        <Navigation isAdmin={isAdmin} />
 
-        {/* Main Content */}
         <main className="pt-16">
           <Routes>
+
+            {/* SOLO invitados */}
             <Route element={<GuestRoute />}>
               <Route path="/login" element={<LoginForm />} />
+              <Route path="/register" element={<RegisterForm />} />
             </Route>
 
+            {/* SOLO logueados */}
             <Route element={<ProtectedRoute />}>
+
               <Route path="/" element={<Dashboard />} />
               <Route path="/estudiantes" element={<Estudiantes />} />
               <Route path="/oficios" element={<Oficios />} />
               <Route path="/becas" element={<Becas />} />
               <Route path="/eventos" element={<Eventos />} />
               <Route path="/miembros" element={<Miembros />} />
-              <Route path="/financiero" element={<Financiero />} />
-              <Route
-                path="/agregar-estudiante"
-                element={<AgregarEstudiantesForm />}
-              />
+              <Route path="/agregar-estudiante" element={<AgregarEstudiantesForm />} />
               <Route path="/agregar-beca" element={<RegistrarBecaForm />} />
-              <Route path="/oficios/agregar-oficio" element={<AddOffice />} />
-              <Route path="/backup" element={<BackupPage />} />
+
+              {/* SOLO ADMIN */}
+              <Route element={<RoleRoute allowedRoles={[1]} />}>
+                <Route path="/backup" element={<BackupPage />} />
+                <Route path="/financiero" element={<Financiero />} />
+              </Route>
+
             </Route>
+
           </Routes>
-          {/* Footer */}
+
           <Footer />
         </main>
       </div>

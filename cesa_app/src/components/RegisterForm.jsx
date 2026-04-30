@@ -2,29 +2,37 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-export default function LoginForm() {
-  const { signIn } = useAuth();
+export default function RegisterForm() {
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+
+    if (password !== confirmPassword) {
+      setErrorMsg("Las contraseñas no coinciden");
+      return;
+    }
+
     setLoading(true);
 
-    const response = await signIn(email, password);
+    const response = await register(email, password);
 
     if (response?.error) {
-      setErrorMsg(response.error);
+      setErrorMsg("Error al crear usuario");
       setLoading(false);
       return;
     }
 
-    navigate("/");
+    alert("Usuario creado correctamente");
+    navigate("/login");
   };
 
   return (
@@ -34,7 +42,7 @@ export default function LoginForm() {
         className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"
       >
         <h2 className="text-2xl font-bold text-center mb-6">
-          Iniciar sesión
+          Crear cuenta
         </h2>
 
         {errorMsg && (
@@ -61,12 +69,21 @@ export default function LoginForm() {
           required
         />
 
+        <input
+          type="password"
+          placeholder="Confirmar contraseña"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          className="w-full p-3 mb-6 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          required
+        />
+
         <button
           disabled={loading}
           type="submit"
-          className="w-full bg-blue-600 text-white font-semibold p-3 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+          className="w-full bg-green-600 text-white font-semibold p-3 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
         >
-          {loading ? "Cargando..." : "Entrar"}
+          {loading ? "Creando..." : "Registrarse"}
         </button>
       </form>
     </div>

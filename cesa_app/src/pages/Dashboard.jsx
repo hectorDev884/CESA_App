@@ -67,24 +67,12 @@ const Dashboard = () => {
         navigate("/financiero");
     };
 
-    // 🚨 Nuevo botón para Backup 🚨
-    const handleBackup = () => {
-        navigate("/backup");
-    };
-
 
     return (
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             <div className="px-4 py-6 sm:px-0 flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
 
-                {/* 🔥 Botón nuevo sin modificar la lógica */}
-                <button
-                    onClick={handleBackup}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                    Backup
-                </button>
             </div>
 
             {loading && finanzas.length === 0 ? (

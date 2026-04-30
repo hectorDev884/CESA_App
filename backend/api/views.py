@@ -333,7 +333,7 @@ class EstudianteViewSet(viewsets.ModelViewSet):
     search_fields = ['numero_control', 'nombre', 'apellido', 'email']
     ordering_fields = ['numero_control', 'apellido', 'nombre', 'fecha_registro']
     ordering = ['apellido', 'nombre']
-    pagination_class = EstudiantePagination  # <-- aquí asignas la paginación
+    pagination_class = EstudiantePagination
     
 class BecaPagination(PageNumberPagination):
     page_size = 10
