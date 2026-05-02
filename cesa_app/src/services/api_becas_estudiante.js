@@ -160,6 +160,47 @@ export async function generarCalendarioGeneral(data) {
   }
 }
 
+export function getReporteBecas() {
+  return apiFetch('/reportes/becas/');
+}
+
+export async function exportarBecasExcel() {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
+  const response = await fetch(`${API_BASE}/reportes/becas/exportar/`, {
+    headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+  });
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'reporte_becas.xlsx';
+  link.click();
+  window.URL.revokeObjectURL(url);
+}
+
+export async function importarEstudiantesExcel(archivo) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
+  const formData = new FormData();
+  formData.append('archivo', archivo);
+
+  const response = await fetch(`${API_BASE}/estudiantes/importar/`, {
+    method: 'POST',
+    headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+    body: formData,
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Error ${response.status}: ${errText}`);
+  }
+  return response.json();
+}
+
 export async function generarBackup(name) {
   try {
     const params = new URLSearchParams({ name });

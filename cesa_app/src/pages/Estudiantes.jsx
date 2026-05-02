@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import SummaryCard from "../components/SummaryCard.jsx";
 import { useNavigate } from "react-router-dom";
 import EditarEstudianteModal from "../components/EditarEstudianteModal.jsx";
@@ -6,6 +6,7 @@ import {
   getEstudiantes,
   updateEstudiante,
   deleteEstudiante,
+  importarEstudiantesExcel,
 } from "../services/api_becas_estudiante.js";
 
 export default function Estudiantes() {
@@ -33,6 +34,11 @@ export default function Estudiantes() {
   // Modal para "Ver más"
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryModalContent, setSummaryModalContent] = useState("");
+
+  // Importar Excel
+  const fileInputRef = useRef(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   // --- Cargar estudiantes (activado por search o currentPage) ---
   useEffect(() => {
@@ -160,6 +166,25 @@ export default function Estudiantes() {
     }
   };
 
+  // --- Importar Excel ---
+  const handleImportClick = () => fileInputRef.current?.click();
+
+  const handleFileChange = async (e) => {
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+    e.target.value = "";
+    setImportLoading(true);
+    try {
+      const result = await importarEstudiantesExcel(archivo);
+      setImportResult(result);
+      fetchEstudiantes();
+    } catch (err) {
+      setImportResult({ error: err.message });
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
   // --- Buscar ---
   const handleSearch = () => {
     // Al buscar, reiniciamos a la página 1 y cambiamos el término de búsqueda
@@ -175,27 +200,47 @@ export default function Estudiantes() {
         <h1 className="text-3xl font-bold text-gray-900">
           Gestión de Estudiantes
         </h1>
-        <button
-          onClick={() => navigate("/agregar-estudiante")}
-          className="mt-4 sm:mt-0 bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 hover:cursor-pointer transition duration-150"
-          disabled={loading}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        <div className="mt-4 sm:mt-0 flex gap-3">
+          {/* Input oculto para Excel */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <button
+            onClick={handleImportClick}
+            disabled={loading || importLoading}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 hover:cursor-pointer transition duration-150 disabled:opacity-50"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Agregar Estudiante
-        </button>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            {importLoading ? "Importando..." : "Importar Excel"}
+          </button>
+          <button
+            onClick={() => navigate("/agregar-estudiante")}
+            className="bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 hover:cursor-pointer transition duration-150"
+            disabled={loading}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Agregar Estudiante
+          </button>
+        </div>
       </div>
 
       {/* Barra de búsqueda */}
@@ -441,6 +486,60 @@ export default function Estudiantes() {
           onSave={handleSaveEdit}
           estudianteData={selectedStudent}
         />
+      )}
+
+      {/* Modal resultado importación Excel */}
+      {importResult && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-lg w-full">
+            {importResult.error ? (
+              <>
+                <h2 className="text-lg font-bold text-red-600 mb-2">Error al importar</h2>
+                <p className="text-gray-700 text-sm">{importResult.error}</p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-bold text-gray-800 mb-3">Resultado de la importación</h2>
+                <div className="flex gap-4 mb-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex-1 text-center">
+                    <p className="text-2xl font-bold text-green-600">{importResult.importados}</p>
+                    <p className="text-xs text-green-700 mt-1">Importados / actualizados</p>
+                  </div>
+                  <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex-1 text-center">
+                    <p className="text-2xl font-bold text-red-500">{importResult.total_errores}</p>
+                    <p className="text-xs text-red-600 mt-1">Filas con error</p>
+                  </div>
+                </div>
+                {importResult.errores?.length > 0 && (
+                  <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-gray-100 sticky top-0">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Fila</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Error</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {importResult.errores.map((e, i) => (
+                          <tr key={i} className="hover:bg-gray-50">
+                            <td className="px-3 py-2 text-gray-500">{e.fila}</td>
+                            <td className="px-3 py-2 text-red-600">{e.error}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
+            )}
+            <button
+              onClick={() => setImportResult(null)}
+              className="mt-4 w-full px-4 py-2 bg-[#036942] text-white rounded-lg hover:bg-green-700 transition hover:cursor-pointer"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
