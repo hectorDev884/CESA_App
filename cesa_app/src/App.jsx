@@ -19,6 +19,7 @@ import LoginForm from "./components/LoginForm.jsx";
 import BackupPage from "./backup/BackupPage.jsx";
 import RegisterForm from "./components/RegisterForm.jsx";
 import Reportes from "./pages/Reportes.jsx";
+import Ayudas from "./pages/Ayudas.jsx";
 import { useAuth } from "./context/AuthContext";
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
               <Route path="/agregar-estudiante" element={<AgregarEstudiantesForm />} />
               <Route path="/agregar-beca" element={<RegistrarBecaForm />} />
               <Route path="/reportes" element={<Reportes />} />
+              <Route path="/ayudas" element={<Ayudas />} />
 
               {/* SOLO ADMIN */}
               <Route element={<RoleRoute allowedRoles={[1]} />}>

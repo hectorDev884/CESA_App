@@ -39,6 +39,7 @@ const Navigation = ({ isAdmin }) => {
                 <Link to="/becas" className={navLinkStyle}>Becas</Link>
                 <Link to="/estudiantes" className={navLinkStyle}>Estudiantes</Link>
                 <Link to="/reportes" className={navLinkStyle}>Reportes</Link>
+                <Link to="/ayudas" className={navLinkStyle}>Ayudas</Link>
 
                 {/* SOLO ADMIN */}
                 {isAdmin && (
@@ -100,6 +101,7 @@ const Navigation = ({ isAdmin }) => {
               <Link to="/becas" onClick={toggleMenu} className={navLinkStyle}>Becas</Link>
               <Link to="/estudiantes" onClick={toggleMenu} className={navLinkStyle}>Estudiantes</Link>
               <Link to="/reportes" onClick={toggleMenu} className={navLinkStyle}>Reportes</Link>
+              <Link to="/ayudas" onClick={toggleMenu} className={navLinkStyle}>Ayudas</Link>
 
               {isAdmin && (
                 <Link to="/backup" onClick={toggleMenu} className={navLinkStyle}>
