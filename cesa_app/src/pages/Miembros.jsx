@@ -287,6 +287,8 @@ export default function Miembros() {
   // Data que efectivamente se muestra en tablas (considera filtros)
   const miembrosAMostrar = miembrosFiltrados ?? miembros;
   const interaccionesAMostrar = interaccionesFiltradas ?? interacciones;
+  const obtenerMiembro = (numero_control) =>
+    miembros.find((m) => m.numero_control === numero_control) || {};
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -311,13 +313,13 @@ export default function Miembros() {
                 setVista("miembros");
                 mostrarTodosMiembros();
               }}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700"
             >
               Mostrar Miembros
             </button>
             <button
               onClick={abrirBuscarMiembro}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
             >
               Buscar Miembro
             </button>
@@ -333,7 +335,7 @@ export default function Miembros() {
                 setVista("interacciones");
                 fetchInteracciones(); // Asegura que los datos estén frescos
               }}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+              className="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600"
             >
               Ver Interacciones
             </button>
@@ -372,6 +374,9 @@ export default function Miembros() {
                       Apellido
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                      Cargo
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                       Email
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
@@ -396,6 +401,7 @@ export default function Miembros() {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{m.nombre}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{m.apellido}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{m.cargo || "-"}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{m.email}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{m.carrera}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{m.semestre}</td>
@@ -418,7 +424,7 @@ export default function Miembros() {
                   ))}
                   {miembrosAMostrar.length === 0 && (
                     <tr>
-                      <td colSpan="8" className="p-6 text-center text-gray-500">
+                      <td colSpan="9" className="p-6 text-center text-gray-500">
                         No hay miembros registrados.
                       </td>
                     </tr>
@@ -431,7 +437,7 @@ export default function Miembros() {
             <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600 flex justify-end items-center gap-3">
               <button
                 onClick={mostrarTodosMiembros}
-                className="bg-gray-500 text-white px-3 py-1 rounded-lg hover:bg-gray-600"
+                className="bg-lime-600 text-white px-3 py-1 rounded-lg hover:bg-lime-700"
               >
                 Mostrar Todos
               </button>
@@ -457,10 +463,22 @@ export default function Miembros() {
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      ID
+                      Número Control
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Miembro (Núm. control)
+                      Nombre
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                      Apellidos
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                      Cargo
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                      Email
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                      Teléfono
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                       Tipo
@@ -480,33 +498,40 @@ export default function Miembros() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {interaccionesAMostrar.map((i) => (
-                    <tr key={i.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-900">{i.id}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{i.miembro_id}</td>
-                      <td className="px-4 py-3 text-sm text-[#036942] font-medium">{i.tipo}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{i.tema}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{i.fecha}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{i.descripcion}</td>
-                      <td className="px-4 py-3 flex justify-center gap-3">
-                        <button
-                          onClick={() => abrirEditarInteraccion(i)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => eliminarInteraccion(i.id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          ❌
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {interaccionesAMostrar.map((i) => {
+                    const miembro = obtenerMiembro(i.miembro_id);
+                    return (
+                      <tr key={i.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm text-gray-900">{i.miembro_id}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{miembro.nombre || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{miembro.apellido || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{miembro.cargo || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{miembro.email || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{miembro.telefono || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-[#036942] font-medium">{i.tipo}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700">{i.tema}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700">{i.fecha}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700">{i.descripcion}</td>
+                        <td className="px-4 py-3 flex justify-center gap-3">
+                          <button
+                            onClick={() => abrirEditarInteraccion(i)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => eliminarInteraccion(i.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            ❌
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                   {interaccionesAMostrar.length === 0 && (
                     <tr>
-                      <td colSpan="7" className="p-6 text-center text-gray-500">
+                      <td colSpan="11" className="p-6 text-center text-gray-500">
                         No hay interacciones registradas.
                       </td>
                     </tr>
@@ -521,7 +546,7 @@ export default function Miembros() {
                 onClick={() => {
                   setVista("miembros");
                 }}
-                className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700"
+                className="bg-emerald-600 text-white px-3 py-1 rounded-lg hover:bg-emerald-700"
               >
                 Volver a Miembros
               </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-export default function EventosModal({ onClose, onSave, eventoData, eventos }) {
+export default function EventosModal({ onClose, onSave, eventoData, eventos, miembros = [] }) {
   // 🔹 Detectar semestre actual automáticamente
   const obtenerSemestreActual = () => {
     const mes = new Date().getMonth() + 1;
@@ -13,6 +13,7 @@ export default function EventosModal({ onClose, onSave, eventoData, eventos }) {
     fecha: "",
     hora: "",
     ubicacion: "",
+    miembro_id: "",
     estatus: "Activo",
     semestre: obtenerSemestreActual(),
     alumnos_inscritos: 0, // 👈 Nuevo campo inicializado en 0
@@ -33,6 +34,7 @@ export default function EventosModal({ onClose, onSave, eventoData, eventos }) {
         fecha: eventoData.fecha || "",
         hora: eventoData.hora || "",
         ubicacion: eventoData.ubicacion || "",
+        miembro_id: eventoData.miembro_id || "",
         estatus: eventoData.estatus || "Activo",
         semestre: eventoData.semestre || obtenerSemestreActual(),
         alumnos_inscritos: eventoData.alumnos_inscritos || 0, // 👈 Cargar valor existente
@@ -45,6 +47,7 @@ export default function EventosModal({ onClose, onSave, eventoData, eventos }) {
         fecha: "",
         hora: "",
         ubicacion: "",
+        miembro_id: "",
         estatus: "Activo",
         semestre: obtenerSemestreActual(),
         alumnos_inscritos: 0, // 👈 Valor por defecto para nuevos
@@ -63,8 +66,8 @@ export default function EventosModal({ onClose, onSave, eventoData, eventos }) {
     e.preventDefault();
 
     // Validar campos requeridos
-    if (!formData.nombre.trim() || !formData.tipo.trim() || !formData.fecha || !formData.hora || !formData.ubicacion.trim()) {
-      alert("⚠️ Por favor, completa todos los campos requeridos.");
+    if (!formData.nombre.trim() || !formData.tipo.trim() || !formData.fecha || !formData.hora || !formData.ubicacion.trim() || !formData.miembro_id) {
+      alert("⚠️ Por favor, completa todos los campos requeridos y selecciona un miembro.");
       return;
     }
 
@@ -158,6 +161,24 @@ export default function EventosModal({ onClose, onSave, eventoData, eventos }) {
               required
               className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 w-full"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Miembro asignado *</label>
+            <select
+              name="miembro_id"
+              value={formData.miembro_id}
+              onChange={handleChange}
+              required
+              className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 w-full"
+            >
+              <option value="">Selecciona un miembro</option>
+              {miembros.map((m) => (
+                <option key={m.numero_control} value={m.numero_control}>
+                  {m.numero_control} — {m.nombre} {m.apellido}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* 📊 NUEVO CAMPO: ALUMNOS INSCRITOS */}

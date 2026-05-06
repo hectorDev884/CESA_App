@@ -42,6 +42,7 @@ export default function MiembrosModal({
                 carrera: '',
                 semestre: '',
                 telefono: '',
+                cargo: '',
             });
         } else if (tipoModal === "editarInteraccion" && initialData) { 
             // 🔑 AJUSTE 1: Formatear la fecha para la edición de interacciones
@@ -74,7 +75,8 @@ export default function MiembrosModal({
 
         if (estudianteEncontrado) {
             // 3. Si se encuentra, AUTOCLMPLETAR y SOBREESCRIBIR el resto del formulario
-            setForm({
+            setForm(prev => ({
+                ...prev,
                 numero_control: estudianteEncontrado.numero_control,
                 nombre: estudianteEncontrado.nombre || '',
                 apellido: estudianteEncontrado.apellido || '',
@@ -82,7 +84,7 @@ export default function MiembrosModal({
                 carrera: estudianteEncontrado.carrera || '',
                 semestre: estudianteEncontrado.semestre || '',
                 telefono: estudianteEncontrado.telefono || '',
-            });
+            }));
         } else {
             // 4. Si no se encuentra o se selecciona el valor vacío, LIMPIAR los campos
             setForm(prev => ({
@@ -111,7 +113,11 @@ export default function MiembrosModal({
                 alert("Selecciona un número de control válido para autocompletar los datos.");
                 return;
             }
-             // Validar que el NC no sea ya un miembro
+            if (!form.cargo) {
+                alert("Selecciona un cargo para el miembro.");
+                return;
+            }
+            // Validar que el NC no sea ya un miembro
             if (miembros.some(m => m.numero_control === form.numero_control)) {
                  alert("Este número de control ya está registrado como miembro.");
                  return;
@@ -126,6 +132,7 @@ export default function MiembrosModal({
                 carrera: form.carrera || "",
                 semestre: form.semestre ? Number(form.semestre) : null,
                 telefono: form.telefono || "",
+                cargo: form.cargo || "",
             });
         } else if (tipoModal === "editarMiembro") {
             if (!initialData || !initialData.numero_control) {
@@ -140,6 +147,7 @@ export default function MiembrosModal({
                 carrera: form.carrera || "",
                 semestre: form.semestre ? Number(form.semestre) : null,
                 telefono: form.telefono || "",
+                cargo: form.cargo || "",
             };
             onEditarMiembro(initialData.numero_control, cambios);
         } else if (tipoModal === "buscarMiembro") {
@@ -196,6 +204,14 @@ export default function MiembrosModal({
             : "";
 
     // Opciones para tipos y temas (mantenido)
+    const cargos = [
+        "Presidente",
+        "Secretario",
+        "Tesorero",
+        "Coordinador",
+        "Vocal",
+        "Miembro",
+    ];
     const tipos = [
         "Reunión presencial",
         "Llamada telefónica",
@@ -229,7 +245,7 @@ export default function MiembrosModal({
     // Lógica para deshabilitar el botón de agregar
     const ncSeleccionadoYDatosCompletos = form.numero_control && form.nombre; 
     const yaEsMiembro = miembros.some(m => m.numero_control === form.numero_control);
-    const puedeAgregar = tipoModal === "agregarMiembro" && ncSeleccionadoYDatosCompletos && !yaEsMiembro;
+    const puedeAgregar = tipoModal === "agregarMiembro" && ncSeleccionadoYDatosCompletos && form.cargo && !yaEsMiembro;
     
 
     return (
@@ -308,6 +324,28 @@ export default function MiembrosModal({
                                     disabled={tipoModal === "agregarMiembro"} 
                                 />
                             </div>
+
+                            {/* Cargo */}
+                            {(tipoModal === "agregarMiembro" || tipoModal === "editarMiembro") && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Cargo
+                                    </label>
+                                    <select
+                                        name="cargo"
+                                        value={form.cargo ?? ""}
+                                        onChange={handleChange}
+                                        className={tipoModal === "agregarMiembro" ? "w-full p-2 border rounded" : "w-full p-2 border rounded"}
+                                    >
+                                        <option value="">Selecciona cargo</option>
+                                        {cargos.map((c) => (
+                                            <option key={c} value={c}>
+                                                {c}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             {/* Apellido */}
                             <div>
