@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import * as XLSX from "xlsx";
 import SummaryCard from "../components/SummaryCard.jsx";
 import { useNavigate } from "react-router-dom";
 import EditarEstudianteModal from "../components/EditarEstudianteModal.jsx";
@@ -39,6 +40,8 @@ export default function Estudiantes() {
   const fileInputRef = useRef(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [previewData, setPreviewData] = useState(null);
+  const [previewFile, setPreviewFile] = useState(null);
 
   // --- Cargar estudiantes (activado por search o currentPage) ---
   useEffect(() => {
@@ -169,13 +172,44 @@ export default function Estudiantes() {
   // --- Importar Excel ---
   const handleImportClick = () => fileInputRef.current?.click();
 
-  const handleFileChange = async (e) => {
+  const handleFileChange = (e) => {
     const archivo = e.target.files?.[0];
     if (!archivo) return;
     e.target.value = "";
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const wb = XLSX.read(evt.target.result, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+        // fila 0 = encabezado, filas 1+ = datos
+        const dataRows = rows.slice(1).filter((r) => r.some((c) => String(c).trim() !== ""));
+        const parsed = dataRows.map((r) => ({
+          nc: String(r[0] ?? "").trim(),
+          nombre: String(r[1] ?? "").trim(),
+          apellido: String(r[2] ?? "").trim(),
+          email: String(r[3] ?? "").trim(),
+          carrera: String(r[4] ?? "").trim(),
+          semestre: String(r[5] ?? "").trim(),
+          telefono: String(r[6] ?? "").trim(),
+        }));
+        setPreviewData(parsed);
+        setPreviewFile(archivo);
+      } catch {
+        setImportResult({ error: "No se pudo leer el archivo Excel." });
+      }
+    };
+    reader.readAsArrayBuffer(archivo);
+  };
+
+  const handleConfirmImport = async () => {
+    if (!previewFile) return;
+    setPreviewData(null);
+    setPreviewFile(null);
     setImportLoading(true);
     try {
-      const result = await importarEstudiantesExcel(archivo);
+      const result = await importarEstudiantesExcel(previewFile);
       setImportResult(result);
       fetchEstudiantes();
     } catch (err) {
@@ -486,6 +520,60 @@ export default function Estudiantes() {
           onSave={handleSaveEdit}
           estudianteData={selectedStudent}
         />
+      )}
+
+      {/* Modal previsualización Excel */}
+      {previewData && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl flex flex-col max-h-[90vh]">
+            <h2 className="text-lg font-bold text-gray-800 mb-1">Previsualización de importación</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Se encontraron <span className="font-semibold text-gray-700">{previewData.length}</span> filas. Revisa los datos antes de confirmar.
+            </p>
+            <div className="overflow-auto flex-1 border border-gray-200 rounded-lg">
+              <table className="min-w-full text-sm">
+                <thead className="bg-gray-100 sticky top-0">
+                  <tr>
+                    {["#", "NC", "Nombre", "Apellido", "Email", "Carrera", "Semestre", "Teléfono"].map((h) => (
+                      <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {previewData.map((row, i) => {
+                    const hasError = !row.nc || !row.nombre || !row.apellido || !row.email || !row.email.includes("@");
+                    return (
+                      <tr key={i} className={hasError ? "bg-red-50" : "hover:bg-gray-50"}>
+                        <td className="px-3 py-2 text-gray-400">{i + 2}</td>
+                        <td className={`px-3 py-2 font-medium ${!row.nc ? "text-red-500" : "text-[#036942]"}`}>{row.nc || "—"}</td>
+                        <td className={`px-3 py-2 ${!row.nombre ? "text-red-500" : "text-gray-800"}`}>{row.nombre || "—"}</td>
+                        <td className={`px-3 py-2 ${!row.apellido ? "text-red-500" : "text-gray-800"}`}>{row.apellido || "—"}</td>
+                        <td className={`px-3 py-2 ${!row.email || !row.email.includes("@") ? "text-red-500" : "text-gray-700"}`}>{row.email || "—"}</td>
+                        <td className="px-3 py-2 text-gray-700">{row.carrera || "—"}</td>
+                        <td className="px-3 py-2 text-gray-700">{row.semestre || "—"}</td>
+                        <td className="px-3 py-2 text-gray-700">{row.telefono || "—"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-4 flex gap-3 justify-end">
+              <button
+                onClick={() => { setPreviewData(null); setPreviewFile(null); }}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition hover:cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmImport}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition hover:cursor-pointer"
+              >
+                Confirmar importación
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal resultado importación Excel */}

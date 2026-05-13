@@ -43,8 +43,10 @@ const Navigation = ({ isAdmin }) => {
 
                 {/* SOLO ADMIN */}
                 {isAdmin && (
-                  <Link to="/backup" className={navLinkStyle}>Backup</Link>,
-                  <Link to="/financiero" className={navLinkStyle}>Financiero</Link>
+                  <>
+                    <Link to="/backup" className={navLinkStyle}>Backup</Link>
+                    <Link to="/financiero" className={navLinkStyle}>Financiero</Link>
+                  </>
                 )}
 
               </div>
@@ -96,7 +98,6 @@ const Navigation = ({ isAdmin }) => {
           {user && (
             <>
               <Link to="/eventos" onClick={toggleMenu} className={navLinkStyle}>Eventos</Link>
-              <Link to="/financiero" onClick={toggleMenu} className={navLinkStyle}>Financiero</Link>
               <Link to="/miembros" onClick={toggleMenu} className={navLinkStyle}>Miembros</Link>
               <Link to="/becas" onClick={toggleMenu} className={navLinkStyle}>Becas</Link>
               <Link to="/estudiantes" onClick={toggleMenu} className={navLinkStyle}>Estudiantes</Link>
@@ -104,12 +105,10 @@ const Navigation = ({ isAdmin }) => {
               <Link to="/ayudas" onClick={toggleMenu} className={navLinkStyle}>Ayudas</Link>
 
               {isAdmin && (
-                <Link to="/backup" onClick={toggleMenu} className={navLinkStyle}>
-                  Backup
-                </Link>,
-                <Link to="/financiero" onClick={toggleMenu} className={navLinkStyle}>
-                  Financiero
-                </Link>
+                <>
+                  <Link to="/backup" onClick={toggleMenu} className={navLinkStyle}>Backup</Link>
+                  <Link to="/financiero" onClick={toggleMenu} className={navLinkStyle}>Financiero</Link>
+                </>
               )}
             </>
           )}
