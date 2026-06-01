@@ -160,8 +160,14 @@ export async function generarCalendarioGeneral(data) {
   }
 }
 
-export function getReporteBecas() {
-  return apiFetch('/reportes/becas/');
+export function getReporteBecas(params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  const url = qs ? `/reportes/becas/?${qs}` : '/reportes/becas/';
+  return apiFetch(url);
+}
+
+export function getReporteEstudiantes() {
+  return apiFetch('/reportes/estudiantes/');
 }
 
 export async function exportarBecasExcel(campos = null) {
@@ -185,6 +191,24 @@ export async function exportarBecasExcel(campos = null) {
   link.download = 'reporte_becas.xlsx';
   link.click();
   window.URL.revokeObjectURL(urlObj);
+}
+
+export async function exportarEstudiantesExcel() {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
+  const response = await fetch(`${API_BASE}/reportes/estudiantes/exportar/`, {
+    headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+  });
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'reporte_estudiantes.xlsx';
+  link.click();
+  window.URL.revokeObjectURL(url);
 }
 
 export async function importarEstudiantesExcel(archivo) {

@@ -4,6 +4,7 @@ from api.views import (
     EstudianteViewSet, BecaViewSet, AsistenciaBecaViewSet,
     generar_pdf_asistencia, generar_pdf_asistencia_general,
     reporte_becas, exportar_becas_excel,
+    reporte_estudiantes, exportar_estudiantes_excel,
 )
 
 router = routers.DefaultRouter()
@@ -18,4 +19,6 @@ urlpatterns = [
     path('api/pdf/asistencia_general/', generar_pdf_asistencia_general, name="generar_pdf_asistencia_general"),
     path('api/reportes/becas/', reporte_becas, name="reporte_becas"),
     path('api/reportes/becas/exportar/', exportar_becas_excel, name="exportar_becas_excel"),
+    path('api/reportes/estudiantes/', reporte_estudiantes, name="reporte_estudiantes"),
+    path('api/reportes/estudiantes/exportar/', exportar_estudiantes_excel, name="exportar_estudiantes_excel"),
 ]

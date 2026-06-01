@@ -19,6 +19,7 @@ import LoginForm from "./components/LoginForm.jsx";
 import BackupPage from "./backup/BackupPage.jsx";
 import RegisterForm from "./components/RegisterForm.jsx";
 import Reportes from "./pages/Reportes.jsx";
+import ReportesEstudiantes from "./pages/ReportesEstudiantes.jsx";
 import Ayudas from "./pages/Ayudas.jsx";
 import { useAuth } from "./context/AuthContext";
 
@@ -51,6 +52,7 @@ function App() {
               <Route path="/agregar-estudiante" element={<AgregarEstudiantesForm />} />
               <Route path="/agregar-beca" element={<RegistrarBecaForm />} />
               <Route path="/reportes" element={<Reportes />} />
+              <Route path="/reportes-estudiantes" element={<ReportesEstudiantes />} />
               <Route path="/ayudas" element={<Ayudas />} />
 
               {/* SOLO ADMIN */}

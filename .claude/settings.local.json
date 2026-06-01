@@ -3,11 +3,12 @@
     "allow": [
       "Bash(pip install *)",
       "Bash(python -c ' *)",
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\darkn\\\\OneDrive\\\\Escritorio\\\\CESA_App\" -Force)",
-      "Bash(Select-Object -Property Name, PSIsContainer)",
-      "Bash(Format-Table -AutoSize)",
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\darkn\\\\OneDrive\\\\Escritorio\\\\CESA_App\" -Recurse -Include \"*.jsx\",\"*.js\")",
-      "Bash(Select-Object -First 40 FullName)"
+      "Bash(git -C \"C:\\\\Users\\\\veneg\\\\Desktop\\\\CESA_App\" status)",
+      "Bash(git -C \"C:\\\\Users\\\\veneg\\\\Desktop\\\\CESA_App\" diff --staged)",
+      "Bash(git -C \"C:\\\\Users\\\\veneg\\\\Desktop\\\\CESA_App\" add CLAUDE.md)",
+      "Bash(git -C 'C:\\\\Users\\\\veneg\\\\Desktop\\\\CESA_App' commit -m ' *)",
+      "Bash(git *)",
+      "Bash(npm install *)"
     ]
   }
 }

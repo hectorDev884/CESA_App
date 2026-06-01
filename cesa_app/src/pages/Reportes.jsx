@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell,
+  PieChart, Pie, Cell, LineChart, Line,
 } from "recharts";
 import { getReporteBecas, exportarBecasExcel } from "../services/api_becas_estudiante";
 
@@ -11,7 +11,9 @@ const COLORES_PIE = [
   "#a3e635", "#fb923c",
 ];
 
-const ESTATUS_COLORES = { aprobadas: "#036942", pendientes: "#fbbf24" };
+const ESTATUS_COLORES = { aprobadas: "#036942", pendientes: "#fbbf24", aprobada: "#036942", pendiente: "#fbbf24" };
+
+const MESES = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 const CAMPOS_DISPONIBLES = [
   { key: "id", label: "ID" },
@@ -56,6 +58,9 @@ export default function Reportes() {
   const [loading, setLoading] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+  const [carreraFiltro, setCarreraFiltro] = useState("");
   const [mostrarSelector, setMostrarSelector] = useState(false);
   const [camposSeleccionados, setCamposSeleccionados] = useState(
     CAMPOS_DISPONIBLES.map((c) => c.key)
@@ -65,11 +70,15 @@ export default function Reportes() {
     fetchData();
   }, []);
 
-  async function fetchData() {
+  async function fetchData(filters = {}) {
     setLoading(true);
     setError(null);
     try {
-      const result = await getReporteBecas();
+      const params = {};
+      if (filters.fecha_inicio) params.fecha_inicio = filters.fecha_inicio;
+      if (filters.fecha_fin) params.fecha_fin = filters.fecha_fin;
+      if (filters.carrera) params.carrera = filters.carrera;
+      const result = await getReporteBecas(params);
       setData(result);
     } catch (err) {
       console.error("Error cargando reportes:", err);
@@ -77,6 +86,21 @@ export default function Reportes() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function aplicarFiltros() {
+    fetchData({
+      fecha_inicio: fechaInicio,
+      fecha_fin: fechaFin,
+      carrera: carreraFiltro,
+    });
+  }
+
+  function limpiarFiltros() {
+    setFechaInicio("");
+    setFechaFin("");
+    setCarreraFiltro("");
+    fetchData({});
   }
 
   async function handleExport() {
@@ -121,19 +145,28 @@ export default function Reportes() {
     return (
       <div className="p-10 text-center text-red-600">
         <p>{error}</p>
-        <button onClick={fetchData} className="mt-4 px-4 py-2 bg-[#036942] text-white rounded-lg hover:bg-green-700 transition">
+        <button onClick={() => fetchData()} className="mt-4 px-4 py-2 bg-[#036942] text-white rounded-lg hover:bg-green-700 transition">
           Reintentar
         </button>
       </div>
     );
   }
 
-  const { totales, por_carrera = [], por_tipo = [], por_semestre = [], por_semestre_academico = [] } = data || {};
+  const {
+    totales,
+    por_carrera = [],
+    por_tipo = [],
+    por_semestre = [],
+    por_estatus = [],
+    tipo_x_carrera = [],
+    por_mes_solicitud = [],
+    por_semestre_academico = [],
+  } = data || {};
 
-  const estatusData = [
-    { name: "Aprobadas", value: totales?.aprobadas || 0 },
-    { name: "Pendientes", value: totales?.pendientes || 0 },
-  ];
+  const estatusData = por_estatus.map((e) => ({
+    name: e.estatus || "Sin estatus",
+    value: e.total,
+  }));
 
   const carreraData = por_carrera.map((c) => ({
     ...c,
@@ -145,9 +178,16 @@ export default function Reportes() {
     tipo_beca: t.tipo_beca || "Sin tipo",
   }));
 
+  const mesSolicitudData = por_mes_solicitud.map((m) => ({
+    label: `${MESES[m.mes] || m.mes} ${m.anio}`,
+    total: m.total,
+  })).reverse();
+
+  const carrerasUnicas = [...new Set(tipo_x_carrera.map((c) => c.carrera))].sort();
+  const tiposUnicos = [...new Set(tipo_x_carrera.map((c) => c.tipo))].sort();
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Reportes de Becas</h1>
         <div className="relative mt-4 sm:mt-0">
@@ -204,6 +244,55 @@ export default function Reportes() {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Filtros */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="flex flex-wrap gap-3 items-end">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Fecha inicio</label>
+            <input
+              type="date"
+              value={fechaInicio}
+              onChange={(e) => setFechaInicio(e.target.value)}
+              className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Fecha fin</label>
+            <input
+              type="date"
+              value={fechaFin}
+              onChange={(e) => setFechaFin(e.target.value)}
+              className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Carrera</label>
+            <select
+              value={carreraFiltro}
+              onChange={(e) => setCarreraFiltro(e.target.value)}
+              className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">Todas</option>
+              {carrerasUnicas.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={aplicarFiltros}
+            className="bg-[#036942] text-white px-4 py-1.5 rounded-lg hover:bg-green-700 text-sm transition"
+          >
+            Aplicar
+          </button>
+          <button
+            onClick={limpiarFiltros}
+            className="text-sm text-gray-600 hover:text-red-600 underline py-1.5"
+          >
+            Limpiar filtros
+          </button>
         </div>
       </div>
 
@@ -269,7 +358,6 @@ export default function Reportes() {
             </BarChart>
           </ResponsiveContainer>
         )}
-        {/* Leyenda de colores */}
         <div className="flex gap-5 mt-3 text-xs text-gray-500">
           <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded-sm bg-[#34d399]"></span>Semestre A (Ene–Jun)</span>
           <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded-sm bg-[#fbbf24]"></span>Semestre B (Jul–Dic)</span>
@@ -277,9 +365,26 @@ export default function Reportes() {
         </div>
       </div>
 
-      {/* Fila de pie charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Por tipo de beca */}
+      {/* Solicitudes por mes */}
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Solicitudes de Beca por Mes</h2>
+        {mesSolicitudData.length === 0 ? (
+          <p className="text-gray-400 text-center py-8">Sin datos</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={mesSolicitudData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+              <YAxis allowDecimals={false} />
+              <Tooltip formatter={(value) => [value, "Solicitudes"]} />
+              <Line type="monotone" dataKey="total" name="Solicitudes" stroke="#036942" strokeWidth={2} dot={{ fill: "#036942", r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* Fila de pie charts: Por tipo + Por estatus */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Por Tipo de Beca</h2>
           {tipoData.length === 0 ? (
@@ -308,29 +413,67 @@ export default function Reportes() {
           )}
         </div>
 
-        {/* Por estatus */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Por Estatus</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={estatusData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={110}
-                labelLine={false}
-                label={renderCustomLabel}
-              >
-                <Cell fill={ESTATUS_COLORES.aprobadas} />
-                <Cell fill={ESTATUS_COLORES.pendientes} />
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+          {estatusData.length === 0 ? (
+            <p className="text-gray-400 text-center py-8">Sin datos</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={estatusData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={110}
+                  labelLine={false}
+                  label={renderCustomLabel}
+                >
+                  {estatusData.map((_, i) => (
+                    <Cell key={i} fill={COLORES_PIE[i % COLORES_PIE.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
+      </div>
+
+      {/* Tabla pivote: Tipo de Beca × Carrera */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-800 mb-1">
+          Tabla Pivote: Tipo de Beca × Carrera
+        </h2>
+        <p className="text-xs text-gray-400 mb-4">
+          Cruce dimensional — cantidad de becas por tipo y carrera
+        </p>
+        {tipo_x_carrera.length === 0 ? (
+          <p className="text-gray-400 text-center py-8">Sin datos para este cruce</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Tipo de Beca</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Carrera</th>
+                  <th className="px-4 py-3 text-right font-semibold text-gray-700">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {tipo_x_carrera.map((row, i) => (
+                  <tr key={i} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 text-gray-900">{row.tipo || "Sin tipo"}</td>
+                    <td className="px-4 py-2 text-[#036942] font-medium">{row.carrera || "Sin carrera"}</td>
+                    <td className="px-4 py-2 text-right text-gray-700">{row.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
