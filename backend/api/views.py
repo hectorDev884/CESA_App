@@ -13,7 +13,8 @@ from reportlab.platypus import Table, TableStyle
 from reportlab.lib.units import mm
 from datetime import datetime, timedelta, date
 import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 from io import BytesIO
 
 WEEKDAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
@@ -433,13 +434,33 @@ class AsistenciaBecaViewSet(viewsets.ModelViewSet):
 
 
 def reporte_becas(request):
-    total     = Beca.objects.count()
-    aprobadas = Beca.objects.filter(estatus='aprobada').count()
-    pendientes = Beca.objects.filter(estatus='pendiente').count()
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    carrera_filtro = request.GET.get('carrera')
+
+    qs = Beca.objects.select_related('numero_control').all()
+
+    if fecha_inicio:
+        try:
+            fi = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            qs = qs.filter(fecha_solicitud__gte=fi)
+        except ValueError:
+            pass
+    if fecha_fin:
+        try:
+            ff = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            qs = qs.filter(fecha_solicitud__lte=ff)
+        except ValueError:
+            pass
+    if carrera_filtro:
+        qs = qs.filter(numero_control__carrera=carrera_filtro)
+
+    total     = qs.count()
+    aprobadas = qs.filter(estatus='aprobada').count()
+    pendientes = qs.filter(estatus='pendiente').count()
 
     por_carrera = list(
-        Beca.objects
-        .values(carrera=F('numero_control__carrera'))
+        qs.values(carrera=F('numero_control__carrera'))
         .annotate(
             total=Count('beca_id'),
             aprobadas=Count('beca_id', filter=Q(estatus='aprobada')),
@@ -449,22 +470,40 @@ def reporte_becas(request):
     )
 
     por_tipo = list(
-        Beca.objects
-        .values('tipo_beca')
+        qs.values('tipo_beca')
         .annotate(total=Count('beca_id'))
         .order_by('-total')
     )
 
     por_semestre = list(
-        Beca.objects
-        .select_related('numero_control')
-        .values(semestre=F('numero_control__semestre'))
+        qs.values(semestre=F('numero_control__semestre'))
         .annotate(total=Count('beca_id'))
         .filter(semestre__isnull=False)
         .order_by('-total')
     )
 
-    # Últimos 6 semestres académicos (A = ene-jun, B = jul-dic)
+    por_estatus = list(
+        qs.values('estatus')
+        .annotate(total=Count('beca_id'))
+        .order_by('-total')
+    )
+
+    tipo_x_carrera = list(
+        qs.values(
+            tipo=F('tipo_beca'),
+            carrera=F('numero_control__carrera'),
+        )
+        .annotate(total=Count('beca_id'))
+        .order_by('tipo', 'carrera')
+    )
+
+    por_mes_solicitud = list(
+        qs.values(mes=F('fecha_solicitud__month'), anio=F('fecha_solicitud__year'))
+        .annotate(total=Count('beca_id'))
+        .filter(fecha_solicitud__isnull=False)
+        .order_by('-anio', '-mes')
+    )
+
     hoy = date.today()
     anio = hoy.year
     sem_actual = 'A' if hoy.month <= 6 else 'B'
@@ -478,7 +517,7 @@ def reporte_becas(request):
         else:
             inicio = date(anio_cur, 7, 1)
             fin    = date(anio_cur, 12, 31)
-        total_sem = Beca.objects.filter(
+        total_sem = qs.filter(
             fecha_solicitud__gte=inicio,
             fecha_solicitud__lte=fin
         ).count()
@@ -492,13 +531,16 @@ def reporte_becas(request):
         else:
             sem = 'A'
 
-    semestres_academicos.reverse()  # más antiguo primero
+    semestres_academicos.reverse()
 
     return JsonResponse({
         'totales': {'total': total, 'aprobadas': aprobadas, 'pendientes': pendientes},
         'por_carrera': por_carrera,
         'por_tipo': por_tipo,
         'por_semestre': por_semestre,
+        'por_estatus': por_estatus,
+        'tipo_x_carrera': tipo_x_carrera,
+        'por_mes_solicitud': por_mes_solicitud,
         'por_semestre_academico': semestres_academicos,
     })
 
@@ -507,7 +549,11 @@ def exportar_becas_excel(request):
     wb = openpyxl.Workbook()
     fill_verde = PatternFill("solid", fgColor="036942")
     font_blanco = Font(bold=True, color="FFFFFF")
-    centrado = Alignment(horizontal='center')
+    centrado = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    borde_thin = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'), bottom=Side(style='thin')
+    )
 
     def _header(ws, headers):
         for col, h in enumerate(headers, 1):
@@ -515,6 +561,30 @@ def exportar_becas_excel(request):
             cell.font = font_blanco
             cell.fill = fill_verde
             cell.alignment = centrado
+            cell.border = borde_thin
+
+    def _format_sheet(ws, col_widths=None):
+        for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=ws.max_column):
+            for cell in row:
+                if cell.row > 1:
+                    cell.border = borde_thin
+                    cell.alignment = Alignment(horizontal='center', vertical='center')
+        if col_widths:
+            for i, w in enumerate(col_widths, 1):
+                ws.column_dimensions[get_column_letter(i)].width = w
+        else:
+            for col_cells in ws.columns:
+                max_len = 0
+                col_letter = get_column_letter(col_cells[0].column)
+                for cell in col_cells:
+                    val = str(cell.value) if cell.value is not None else ''
+                    max_len = max(max_len, len(val))
+                ws.column_dimensions[col_letter].width = min(max_len + 4, 55)
+        ws.sheet_properties.pageSetUpPr = openpyxl.worksheet.properties.PageSetupProperties(fitToPage=True)
+        ws.page_setup.orientation = 'landscape'
+        ws.page_setup.fitToWidth = 1
+        ws.page_setup.fitToHeight = 0
+        ws.sheet_properties.tabColor = "036942"
 
     # Hoja 1: todas las becas
     ws1 = wb.active
@@ -533,6 +603,7 @@ def exportar_becas_excel(request):
         ws1.cell(row=row, column=8, value=str(b.fecha_entrega) if b.fecha_entrega else '')
         ws1.cell(row=row, column=9, value=str(b.fecha_fin) if b.fecha_fin else '')
         ws1.cell(row=row, column=10, value=b.estatus)
+    _format_sheet(ws1)
 
     # Hoja 2: por carrera
     ws2 = wb.create_sheet("Por Carrera")
@@ -550,6 +621,7 @@ def exportar_becas_excel(request):
         ws2.cell(row=row, column=2, value=item['total'])
         ws2.cell(row=row, column=3, value=item['aprobadas'])
         ws2.cell(row=row, column=4, value=item['pendientes'])
+    _format_sheet(ws2)
 
     # Hoja 3: por tipo
     ws3 = wb.create_sheet("Por Tipo")
@@ -560,6 +632,49 @@ def exportar_becas_excel(request):
     ):
         ws3.cell(row=row, column=1, value=item['tipo_beca'] or 'Sin tipo')
         ws3.cell(row=row, column=2, value=item['total'])
+    _format_sheet(ws3)
+
+    # Hoja 4: por estatus
+    ws4 = wb.create_sheet("Por Estatus")
+    _header(ws4, ['Estatus', 'Total'])
+    for row, item in enumerate(
+        Beca.objects.values('estatus').annotate(total=Count('beca_id')).order_by('-total'),
+        2
+    ):
+        ws4.cell(row=row, column=1, value=item['estatus'] or 'Sin estatus')
+        ws4.cell(row=row, column=2, value=item['total'])
+    _format_sheet(ws4)
+
+    # Hoja 5: Tipo x Carrera (tabla pivote)
+    ws5 = wb.create_sheet("Tipo x Carrera")
+    _header(ws5, ['Tipo de Beca', 'Carrera', 'Total'])
+    for row, item in enumerate(
+        Beca.objects
+        .values(tipo=F('tipo_beca'), carrera=F('numero_control__carrera'))
+        .annotate(total=Count('beca_id'))
+        .order_by('tipo', '-total'),
+        2
+    ):
+        ws5.cell(row=row, column=1, value=item['tipo'] or 'Sin tipo')
+        ws5.cell(row=row, column=2, value=item['carrera'] or 'Sin carrera')
+        ws5.cell(row=row, column=3, value=item['total'])
+    _format_sheet(ws5)
+
+    # Hoja 6: por mes de solicitud
+    ws6 = wb.create_sheet("Por Mes")
+    _header(ws6, ['Año', 'Mes', 'Total'])
+    for row, item in enumerate(
+        Beca.objects
+        .filter(fecha_solicitud__isnull=False)
+        .values(anio=F('fecha_solicitud__year'), mes=F('fecha_solicitud__month'))
+        .annotate(total=Count('beca_id'))
+        .order_by('-anio', '-mes'),
+        2
+    ):
+        ws6.cell(row=row, column=1, value=item['anio'])
+        ws6.cell(row=row, column=2, value=item['mes'])
+        ws6.cell(row=row, column=3, value=item['total'])
+    _format_sheet(ws6)
 
     buf = BytesIO()
     wb.save(buf)
@@ -570,5 +685,149 @@ def exportar_becas_excel(request):
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     resp['Content-Disposition'] = 'attachment; filename="reporte_becas.xlsx"'
+    return resp
+
+
+def reporte_estudiantes(request):
+    qs = Estudiante.objects.all()
+
+    total = qs.count()
+
+    por_carrera = list(
+        qs.values('carrera')
+        .annotate(total=Count('numero_control'))
+        .order_by('-total')
+    )
+
+    por_semestre = list(
+        qs.values('semestre')
+        .annotate(total=Count('numero_control'))
+        .filter(semestre__isnull=False)
+        .order_by('semestre')
+    )
+
+    carrera_x_semestre = list(
+        qs.values('carrera', 'semestre')
+        .annotate(total=Count('numero_control'))
+        .filter(carrera__isnull=False, semestre__isnull=False)
+        .order_by('carrera', 'semestre')
+    )
+
+    por_mes_registro = list(
+        qs.filter(fecha_registro__isnull=False)
+        .values(mes=F('fecha_registro__month'), anio=F('fecha_registro__year'))
+        .annotate(total=Count('numero_control'))
+        .order_by('-anio', '-mes')[:12]
+    )
+
+    return JsonResponse({
+        'totales': {'total': total},
+        'por_carrera': por_carrera,
+        'por_semestre': por_semestre,
+        'carrera_x_semestre': carrera_x_semestre,
+        'por_mes_registro': list(reversed(por_mes_registro)),
+    })
+
+
+def exportar_estudiantes_excel(request):
+    wb = openpyxl.Workbook()
+    fill_verde = PatternFill("solid", fgColor="036942")
+    font_blanco = Font(bold=True, color="FFFFFF")
+    centrado = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    borde_thin = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'), bottom=Side(style='thin')
+    )
+
+    def _header(ws, headers):
+        for col, h in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=h)
+            cell.font = font_blanco
+            cell.fill = fill_verde
+            cell.alignment = centrado
+            cell.border = borde_thin
+
+    def _format_sheet(ws):
+        for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=ws.max_column):
+            for cell in row:
+                if cell.row > 1:
+                    cell.border = borde_thin
+                    cell.alignment = Alignment(horizontal='center', vertical='center')
+        for col_cells in ws.columns:
+            max_len = 0
+            col_letter = get_column_letter(col_cells[0].column)
+            for cell in col_cells:
+                val = str(cell.value) if cell.value is not None else ''
+                max_len = max(max_len, len(val))
+            ws.column_dimensions[col_letter].width = min(max_len + 4, 55)
+        ws.sheet_properties.pageSetUpPr = openpyxl.worksheet.properties.PageSetupProperties(fitToPage=True)
+        ws.page_setup.orientation = 'landscape'
+        ws.page_setup.fitToWidth = 1
+        ws.page_setup.fitToHeight = 0
+        ws.sheet_properties.tabColor = "036942"
+
+    ws1 = wb.active
+    ws1.title = "Estudiantes"
+    _header(ws1, ['Número Control', 'Nombre', 'Apellido', 'Email', 'Carrera',
+                  'Semestre', 'Teléfono', 'Fecha Registro'])
+    for row, e in enumerate(Estudiante.objects.order_by('apellido', 'nombre'), 2):
+        ws1.cell(row=row, column=1, value=e.numero_control)
+        ws1.cell(row=row, column=2, value=e.nombre)
+        ws1.cell(row=row, column=3, value=e.apellido)
+        ws1.cell(row=row, column=4, value=e.email)
+        ws1.cell(row=row, column=5, value=e.carrera or '')
+        ws1.cell(row=row, column=6, value=e.semestre or '')
+        ws1.cell(row=row, column=7, value=e.telefono or '')
+        ws1.cell(row=row, column=8, value=str(e.fecha_registro)[:10] if e.fecha_registro else '')
+    _format_sheet(ws1)
+
+    ws2 = wb.create_sheet("Por Carrera")
+    _header(ws2, ['Carrera', 'Total'])
+    for row, item in enumerate(
+        Estudiante.objects.values('carrera')
+        .annotate(total=Count('numero_control'))
+        .order_by('-total'),
+        2
+    ):
+        ws2.cell(row=row, column=1, value=item['carrera'] or 'Sin carrera')
+        ws2.cell(row=row, column=2, value=item['total'])
+    _format_sheet(ws2)
+
+    ws3 = wb.create_sheet("Por Semestre")
+    _header(ws3, ['Semestre', 'Total'])
+    for row, item in enumerate(
+        Estudiante.objects.values('semestre')
+        .annotate(total=Count('numero_control'))
+        .filter(semestre__isnull=False)
+        .order_by('semestre'),
+        2
+    ):
+        ws3.cell(row=row, column=1, value=item['semestre'])
+        ws3.cell(row=row, column=2, value=item['total'])
+    _format_sheet(ws3)
+
+    ws4 = wb.create_sheet("Carrera x Semestre")
+    _header(ws4, ['Carrera', 'Semestre', 'Total'])
+    for row, item in enumerate(
+        Estudiante.objects.values('carrera', 'semestre')
+        .annotate(total=Count('numero_control'))
+        .filter(carrera__isnull=False, semestre__isnull=False)
+        .order_by('carrera', 'semestre'),
+        2
+    ):
+        ws4.cell(row=row, column=1, value=item['carrera'])
+        ws4.cell(row=row, column=2, value=item['semestre'])
+        ws4.cell(row=row, column=3, value=item['total'])
+    _format_sheet(ws4)
+
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    resp = HttpResponse(
+        buf.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    resp['Content-Disposition'] = 'attachment; filename="reporte_estudiantes.xlsx"'
     return resp
 
