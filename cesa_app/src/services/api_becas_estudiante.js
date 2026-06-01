@@ -170,22 +170,27 @@ export function getReporteEstudiantes() {
   return apiFetch('/reportes/estudiantes/');
 }
 
-export async function exportarBecasExcel() {
+export async function exportarBecasExcel(campos = null) {
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token;
 
-  const response = await fetch(`${API_BASE}/reportes/becas/exportar/`, {
+  let url = `${API_BASE}/reportes/becas/exportar/`;
+  if (campos && campos.length > 0) {
+    url += `?campos=${encodeURIComponent(campos.join(','))}`;
+  }
+
+  const response = await fetch(url, {
     headers: { ...(token && { Authorization: `Bearer ${token}` }) },
   });
   if (!response.ok) throw new Error(`Error ${response.status}`);
 
   const blob = await response.blob();
-  const url = window.URL.createObjectURL(blob);
+  const urlObj = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
-  link.href = url;
+  link.href = urlObj;
   link.download = 'reporte_becas.xlsx';
   link.click();
-  window.URL.revokeObjectURL(url);
+  window.URL.revokeObjectURL(urlObj);
 }
 
 export async function exportarEstudiantesExcel() {

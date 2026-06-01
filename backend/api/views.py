@@ -545,6 +545,23 @@ def reporte_becas(request):
     })
 
 
+CAMPOS_MAP = {
+    'id':               ('ID',               lambda b, e: b.beca_id),
+    'numero_control':   ('Número Control',   lambda b, e: e.numero_control if e else ''),
+    'estudiante':       ('Estudiante',       lambda b, e: f"{e.nombre} {e.apellido}" if e else ''),
+    'carrera':          ('Carrera',          lambda b, e: e.carrera if e else ''),
+    'semestre':         ('Semestre',         lambda b, e: e.semestre if e else ''),
+    'email':            ('Email',            lambda b, e: e.email if e else ''),
+    'telefono':         ('Teléfono',         lambda b, e: e.telefono if e else ''),
+    'tipo_beca':        ('Tipo Beca',        lambda b, e: b.tipo_beca),
+    'fecha_solicitud':  ('Fecha Solicitud',  lambda b, e: str(b.fecha_solicitud) if b.fecha_solicitud else ''),
+    'fecha_aprobacion': ('Fecha Aprobación', lambda b, e: str(b.fecha_aprobacion) if b.fecha_aprobacion else ''),
+    'fecha_entrega':    ('Fecha Entrega',    lambda b, e: str(b.fecha_entrega) if b.fecha_entrega else ''),
+    'fecha_fin':        ('Fecha Fin',        lambda b, e: str(b.fecha_fin) if b.fecha_fin else ''),
+    'estatus':          ('Estatus',          lambda b, e: b.estatus),
+}
+
+
 def exportar_becas_excel(request):
     wb = openpyxl.Workbook()
     fill_verde = PatternFill("solid", fgColor="036942")
@@ -586,23 +603,21 @@ def exportar_becas_excel(request):
         ws.page_setup.fitToHeight = 0
         ws.sheet_properties.tabColor = "036942"
 
+    campos_param = request.GET.get('campos', '')
+    if campos_param:
+        campos_activos = [c.strip() for c in campos_param.split(',') if c.strip() in CAMPOS_MAP]
+    else:
+        campos_activos = list(CAMPOS_MAP.keys())
+    headers = [CAMPOS_MAP[c][0] for c in campos_activos]
+
     # Hoja 1: todas las becas
     ws1 = wb.active
     ws1.title = "Becas"
-    _header(ws1, ['ID', 'Número Control', 'Estudiante', 'Carrera', 'Tipo Beca',
-                  'Fecha Solicitud', 'Fecha Aprobación', 'Fecha Entrega', 'Fecha Fin', 'Estatus'])
+    _header(ws1, headers)
     for row, b in enumerate(Beca.objects.select_related('numero_control').order_by('beca_id'), 2):
         e = b.numero_control
-        ws1.cell(row=row, column=1, value=b.beca_id)
-        ws1.cell(row=row, column=2, value=e.numero_control if e else '')
-        ws1.cell(row=row, column=3, value=f"{e.nombre} {e.apellido}" if e else '')
-        ws1.cell(row=row, column=4, value=e.carrera if e else '')
-        ws1.cell(row=row, column=5, value=b.tipo_beca)
-        ws1.cell(row=row, column=6, value=str(b.fecha_solicitud) if b.fecha_solicitud else '')
-        ws1.cell(row=row, column=7, value=str(b.fecha_aprobacion) if b.fecha_aprobacion else '')
-        ws1.cell(row=row, column=8, value=str(b.fecha_entrega) if b.fecha_entrega else '')
-        ws1.cell(row=row, column=9, value=str(b.fecha_fin) if b.fecha_fin else '')
-        ws1.cell(row=row, column=10, value=b.estatus)
+        for col, campo in enumerate(campos_activos, 1):
+            ws1.cell(row=row, column=col, value=CAMPOS_MAP[campo][1](b, e))
     _format_sheet(ws1)
 
     # Hoja 2: por carrera

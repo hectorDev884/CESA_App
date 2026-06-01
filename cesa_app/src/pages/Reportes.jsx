@@ -15,6 +15,22 @@ const ESTATUS_COLORES = { aprobadas: "#036942", pendientes: "#fbbf24", aprobada:
 
 const MESES = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
+const CAMPOS_DISPONIBLES = [
+  { key: "id", label: "ID" },
+  { key: "numero_control", label: "Número Control" },
+  { key: "estudiante", label: "Estudiante" },
+  { key: "carrera", label: "Carrera" },
+  { key: "semestre", label: "Semestre" },
+  { key: "email", label: "Email" },
+  { key: "telefono", label: "Teléfono" },
+  { key: "tipo_beca", label: "Tipo Beca" },
+  { key: "fecha_solicitud", label: "Fecha Solicitud" },
+  { key: "fecha_aprobacion", label: "Fecha Aprobación" },
+  { key: "fecha_entrega", label: "Fecha Entrega" },
+  { key: "fecha_fin", label: "Fecha Fin" },
+  { key: "estatus", label: "Estatus" },
+];
+
 function StatCard({ titulo, valor, color }) {
   return (
     <div className="bg-white rounded-lg shadow p-6 text-center">
@@ -45,6 +61,10 @@ export default function Reportes() {
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
   const [carreraFiltro, setCarreraFiltro] = useState("");
+  const [mostrarSelector, setMostrarSelector] = useState(false);
+  const [camposSeleccionados, setCamposSeleccionados] = useState(
+    CAMPOS_DISPONIBLES.map((c) => c.key)
+  );
 
   useEffect(() => {
     fetchData();
@@ -85,12 +105,27 @@ export default function Reportes() {
 
   async function handleExport() {
     setExportLoading(true);
+    setMostrarSelector(false);
     try {
-      await exportarBecasExcel();
-    } catch (err) {
+      await exportarBecasExcel(camposSeleccionados);
+    } catch {
       alert("Error al exportar el reporte.");
     } finally {
       setExportLoading(false);
+    }
+  }
+
+  function toggleCampo(key) {
+    setCamposSeleccionados((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  }
+
+  function toggleTodos() {
+    if (camposSeleccionados.length === CAMPOS_DISPONIBLES.length) {
+      setCamposSeleccionados([]);
+    } else {
+      setCamposSeleccionados(CAMPOS_DISPONIBLES.map((c) => c.key));
     }
   }
 
@@ -154,20 +189,62 @@ export default function Reportes() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Reportes de Becas</h1>
-          <p className="text-sm text-gray-500 mt-1">Análisis multidimensional del proceso de becas</p>
+        <h1 className="text-3xl font-bold text-gray-900">Reportes de Becas</h1>
+        <div className="relative mt-4 sm:mt-0">
+          <button
+            onClick={() => setMostrarSelector(!mostrarSelector)}
+            disabled={exportLoading}
+            className="bg-[#036942] text-white px-5 py-2 rounded-lg hover:bg-green-700 transition duration-150 disabled:opacity-50 flex items-center gap-2 hover:cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            {exportLoading ? "Exportando..." : "Exportar Excel"}
+          </button>
+
+          {mostrarSelector && (
+            <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+              <div className="p-3 border-b border-gray-100">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer hover:cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={camposSeleccionados.length === CAMPOS_DISPONIBLES.length}
+                    onChange={toggleTodos}
+                    className="rounded accent-[#036942] hover:cursor-pointer"
+                  />
+                  {camposSeleccionados.length === CAMPOS_DISPONIBLES.length
+                    ? "Deseleccionar todos"
+                    : "Seleccionar todos"}
+                </label>
+              </div>
+              <div className="p-3 max-h-64 overflow-y-auto grid grid-cols-2 gap-2">
+                {CAMPOS_DISPONIBLES.map((campo) => (
+                  <label
+                    key={campo.key}
+                    className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-900 hover:cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={camposSeleccionados.includes(campo.key)}
+                      onChange={() => toggleCampo(campo.key)}
+                      className="rounded accent-[#036942] hover:cursor-pointer"
+                    />
+                    {campo.label}
+                  </label>
+                ))}
+              </div>
+              <div className="p-3 border-t border-gray-100">
+                <button
+                  onClick={handleExport}
+                  disabled={camposSeleccionados.length === 0 || exportLoading}
+                  className="w-full bg-[#036942] text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-150 disabled:opacity-50 text-sm font-medium hover:cursor-pointer"
+                >
+                  Exportar ({camposSeleccionados.length} campos)
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-        <button
-          onClick={handleExport}
-          disabled={exportLoading}
-          className="mt-4 sm:mt-0 bg-[#036942] text-white px-5 py-2 rounded-lg hover:bg-green-700 transition duration-150 disabled:opacity-50 flex items-center gap-2 hover:cursor-pointer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          {exportLoading ? "Exportando..." : "Exportar Excel"}
-        </button>
       </div>
 
       {/* Filtros */}
